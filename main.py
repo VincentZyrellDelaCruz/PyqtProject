@@ -1,9 +1,7 @@
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QStackedWidget
-from PyQt6.uic import loadUi
+from PyQt6.QtWidgets import QApplication
 from controllers.app_controller import AppController
-import config
 
 os.environ["QT_SCALE_FACTOR"] = "1"
 
