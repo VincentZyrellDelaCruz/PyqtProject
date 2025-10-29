@@ -9,3 +9,4 @@ class SignupScreen(QDialog):
 
         self.app_controller = app_controller
         self.ui.login_btn.clicked.connect(self.app_controller.goto_login)
+        self.ui.signup_btn.clicked.connect(self.app_controller.goto_main)

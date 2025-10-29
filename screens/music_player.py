@@ -19,7 +19,7 @@ class MusicPlayer(QDialog):
 
         # Gets all existing music file inside local_music folder
         local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-        self.song_title = local_playlist[1] if local_playlist else ""
+        self.song_title = local_playlist[0] if local_playlist else ""
 
         self.rotation_angle = 0
         self.rotation_timer = QTimer(self)
@@ -47,6 +47,12 @@ class MusicPlayer(QDialog):
         self.ui.progressTime.sliderReleased.connect(self.slider_released)
 
         self.play()
+
+    def closeEvent(self, event):
+        """Override close event to stop playback when dialog is closed"""
+        self.player.stop()
+        self.rotation_timer.stop()
+        event.accept()
 
     def init_ui(self):
         self.ui.playButton.setIcon(QIcon(config.ICON_PATH + "play.svg"))

@@ -22,7 +22,8 @@ class AppController:
 
         self.add_widget_stack()
 
-        self.widget.setCurrentWidget(self.main)
+        # Start on welcome screen instead of main screen
+        self.widget.setCurrentWidget(self.welcome)
 
         self.widget.setFixedSize(*config.WINDOW_SIZE)
         self.center_widget()
@@ -52,8 +53,13 @@ class AppController:
     def goto_welcome(self):
         self.widget.setCurrentWidget(self.welcome)
 
+    def goto_main(self):
+        self.widget.setCurrentWidget(self.main)
+
     def goto_local(self):
-        self.main.ui.home_stack.setCurrentWidget(self.main.ui.local_page)
+        # Open music player as a dialog
+        music_player = MusicPlayer()
+        music_player.exec()
 
     def goto_home(self):
         self.main.ui.home_stack.setCurrentIndex(0)
