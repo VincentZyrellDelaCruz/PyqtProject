@@ -8,6 +8,7 @@
 
 `pip install requests`
 
+`pip install eyed3` 
 
 ## NOTE: 
 After you created/update your UI file, you need to convert from ui (xml) to python file by entering this command to terminal:
