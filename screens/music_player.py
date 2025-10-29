@@ -1,44 +1,47 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtCore import Qt, QUrl, QTimer
+from PyQt6.QtCore import Qt, QUrl, QTimer, QByteArray
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
+from functools import partial
 from UI.music_player_ui import Ui_Dialog
-import sys, os, config
+from eyed3.id3.frames import ImageFrame
+import sys, os, config, eyed3
 
 # Temporary variables
-song_title = 'Never Gonna Give You Up.mp3'
-song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
+# song_title = 'Never Gonna Give You Up.mp3'
+# song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
 
-class MusicPlayer(QMainWindow):
+class MusicPlayer(QDialog):
     def __init__(self):
         super().__init__()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.init_ui()
+
+        # Gets all existing music file inside local_music folder
+        local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
+        self.song_title = local_playlist[1] if local_playlist else ""
 
         self.rotation_angle = 0
         self.rotation_timer = QTimer(self)
-        self.rotation_timer.timeout.connect(self.spin_pixmap)
-        self.rotation_timer.start(30)  # ~33 FPS
+
+        self.button_group = QButtonGroup(self)
+        self.button_group.setExclusive(True)
+
+        self.display_local_playlist(local_playlist)
 
         self.audio_output = QAudioOutput()
         self.player = QMediaPlayer()
         self.player.setAudioOutput(self.audio_output)
 
-        # Checks if the song is inside the assigned local music folder
-        song_path = os.path.join(config.LOCAL_MUSIC_PATH + song_title)
-        if not os.path.exists(song_path):
-            print("Song file not found:", song_path)
-        else:
-            self.player.setSource(QUrl.fromLocalFile(song_path))
-            self.ui.song_title.setText(os.path.basename(song_path))
+        self.load_music()
+
+        self.init_ui()
 
         self.isPlaying = True
         self.ui.playButton.clicked.connect(self.toggle_play_pause)
 
         self.player.positionChanged.connect(self.update_position)
         self.player.durationChanged.connect(self.update_duration)
-        # self.ui.progressTime.sliderMoved.connect(self.seek_position)
 
         self.ui.progressTime.sliderPressed.connect(self.slider_pressed)
         self.ui.progressTime.sliderReleased.connect(self.slider_released)
@@ -50,28 +53,128 @@ class MusicPlayer(QMainWindow):
         self.ui.nextButton.setIcon(QIcon(config.ICON_PATH + "next.svg"))
         self.ui.prevButton.setIcon(QIcon(config.ICON_PATH + "prev.svg"))
 
-        pixmap = QPixmap(song_image)
+        self.ui.playback_tab.clicked.connect(self.switch_to_playback)
+        self.ui.list_tab.clicked.connect(self.switch_to_playlist)
+
+        self.rotation_timer.timeout.connect(self.spin_pixmap)
+        self.rotation_timer.start(30)  # ~33 FPS
+
+    def load_music(self):
+        song_path = os.path.join(config.LOCAL_MUSIC_PATH + self.song_title)
+
+        # Checks if the song is inside the assigned local music folder
+        if not os.path.exists(song_path):
+            print("Song file not found:", song_path)
+            return
+
+        self.player.setSource(QUrl.fromLocalFile(song_path))
+        self.ui.song_title.setText(os.path.basename(song_path).removesuffix('.mp3'))
+        self.setWindowTitle('Now playing: ' + self.song_title.replace('.mp3', '_'))
+
+        # For extracting music file's embedded image
+        pixmap = None
+        try:
+            audiofile = eyed3.load(song_path)
+            if audiofile and audiofile.tag:
+                image_data = None
+
+                for image in audiofile.tag.images:
+                    if image.picture_type == ImageFrame.FRONT_COVER:
+                        image_data = image.image_data
+                        break
+
+                if not image_data and audiofile.tag.images:
+                    image_data = list(audiofile.tag.images)[0].image_data
+
+                if image_data:
+                    pixmap = QPixmap()
+                    if pixmap.loadFromData(image_data):
+                        print("Album art loaded from:", song_path)
+                    else:
+                        pixmap = None
+
+        except Exception as e:
+            print("Error extraction album art: ", e )
+
+        if not pixmap or pixmap.isNull():
+            fallback_path = os.path.join(config.IMAGE_PATH, "default.png")
+            pixmap = QPixmap(fallback_path)
 
         if not pixmap.isNull():
             cd_pixmap = self.cd_pixmap(pixmap, self.ui.spinner.width())
             self.fixed_pixmap = cd_pixmap
+            self.ui.spinner.setPixmap(cd_pixmap)
 
-        self.ui.spinner.setPixmap(cd_pixmap)
+    def change_music(self, song):
+        self.song_title = song
+        self.load_music()
+        self.play()
+
+    def display_local_playlist(self, local_playlist=None):
+        if local_playlist is None:
+            return
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("QScrollArea { background: transparent; border: none;}")
+
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(6)
+
+        for i, song_title in enumerate(local_playlist):
+            song_btn = QPushButton(song_title.replace('.mp3', ''))
+            song_btn.setCheckable(True)
+            song_btn.setStyleSheet('''
+                QPushButton { 
+                    color: #fff; 
+                    text-align: left; 
+                    background-color: transparent; 
+                    padding: 8px 10px;
+                    border: none;
+                    border-radius: 5px; 
+                }
+                QPushButton:hover {
+                    background-color: #3a3a3a;
+                }
+                QPushButton:checked {
+                    background-color: #1DB954;
+                }
+            ''')
+            song_btn.clicked.connect(partial(self.change_music, song_title))
+
+            self.button_group.addButton(song_btn, id=i)
+            content_layout.addWidget(song_btn)
+
+        scroll_area.setWidget(content_widget)
+        self.ui.list_layout.addWidget(scroll_area)
+
+        # print(''.join(filename for filename in filenames))
 
     @staticmethod
     def cd_pixmap(pixmap, size, hole_ratio = 0.25):
-        # Resize to square
-        scaled = pixmap.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+        # Step 1: Crop the original to a 1:1 square before scaling
+        w, h = pixmap.width(), pixmap.height()
+        if w != h:
+            side = min(w, h)
+            x = (w - side) // 2
+            y = (h - side) // 2
+            pixmap = pixmap.copy(x, y, side, side)
+
+        # Step 2: Scale perfectly to the CD size (no aspect stretch)
+        scaled = pixmap.scaled(size, size, Qt.AspectRatioMode.IgnoreAspectRatio,
                                Qt.TransformationMode.SmoothTransformation)
 
-        # Create base mask
+        # Step 3: Create transparent CD mask
         mask = QPixmap(size, size)
         mask.fill(Qt.GlobalColor.transparent)
 
         painter = QPainter(mask)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # Outer circle
+        # Outer circle (CD)
         outer_path = QPainterPath()
         outer_path.addEllipse(0, 0, size, size)
 
@@ -81,7 +184,7 @@ class MusicPlayer(QMainWindow):
         inner_path = QPainterPath()
         inner_path.addEllipse(hole_offset, hole_offset, hole_size, hole_size)
 
-        # Subtract hole from outer circle
+        # Combine (subtract hole)
         final_path = outer_path.subtracted(inner_path)
         painter.setClipPath(final_path)
         painter.drawPixmap(0, 0, scaled)
@@ -108,6 +211,12 @@ class MusicPlayer(QMainWindow):
             painter.end()
 
             self.ui.spinner.setPixmap(rotated_canvas)
+
+    def switch_to_playback(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def switch_to_playlist(self):
+        self.ui.stackedWidget.setCurrentIndex(1)
 
     # Unified play/pause toggle
     def toggle_play_pause(self):

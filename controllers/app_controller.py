@@ -6,6 +6,7 @@ from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
 from screens.signup_screen import SignupScreen
 from screens.main_screen import MainScreen
+from screens.music_player import MusicPlayer
 import config
 
 class AppController:

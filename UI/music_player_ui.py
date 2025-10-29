@@ -31,7 +31,7 @@ class Ui_Dialog(object):
 "border-radius: 50px;")
         self.widget_2.setObjectName("widget_2")
         self.playButton = QtWidgets.QPushButton(parent=self.widget_2)
-        self.playButton.setGeometry(QtCore.QRect(310, 280, 100, 100))
+        self.playButton.setGeometry(QtCore.QRect(310, 360, 100, 100))
         self.playButton.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.playButton.setStyleSheet("QPushButton {\n"
 "    background-color: #1DB954;\n"
@@ -45,7 +45,7 @@ class Ui_Dialog(object):
         self.playButton.setIconSize(QtCore.QSize(60, 60))
         self.playButton.setObjectName("playButton")
         self.prevButton = QtWidgets.QPushButton(parent=self.widget_2)
-        self.prevButton.setGeometry(QtCore.QRect(220, 290, 70, 70))
+        self.prevButton.setGeometry(QtCore.QRect(220, 370, 70, 70))
         self.prevButton.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.prevButton.setStyleSheet("QPushButton {\n"
 "    background-color: #1DB954;\n"
@@ -59,7 +59,7 @@ class Ui_Dialog(object):
         self.prevButton.setIconSize(QtCore.QSize(40, 40))
         self.prevButton.setObjectName("prevButton")
         self.nextButton = QtWidgets.QPushButton(parent=self.widget_2)
-        self.nextButton.setGeometry(QtCore.QRect(430, 290, 70, 70))
+        self.nextButton.setGeometry(QtCore.QRect(430, 370, 70, 70))
         self.nextButton.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.nextButton.setStyleSheet("QPushButton {\n"
 "    background-color: #1DB954;\n"
@@ -72,31 +72,36 @@ class Ui_Dialog(object):
         self.nextButton.setIcon(icon2)
         self.nextButton.setIconSize(QtCore.QSize(40, 40))
         self.nextButton.setObjectName("nextButton")
-        self.progressTime = QtWidgets.QSlider(parent=self.widget_2)
-        self.progressTime.setGeometry(QtCore.QRect(60, 150, 571, 31))
+        self.stackedWidget = QtWidgets.QStackedWidget(parent=self.widget_2)
+        self.stackedWidget.setGeometry(QtCore.QRect(49, 79, 601, 231))
+        self.stackedWidget.setObjectName("stackedWidget")
+        self.info = QtWidgets.QWidget()
+        self.info.setObjectName("info")
+        self.progressTime = QtWidgets.QSlider(parent=self.info)
+        self.progressTime.setGeometry(QtCore.QRect(10, 100, 571, 31))
         self.progressTime.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.progressTime.setStyleSheet("QSlider {\n"
 "    \n"
 "}")
         self.progressTime.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.progressTime.setObjectName("progressTime")
-        self.currentTime = QtWidgets.QLabel(parent=self.widget_2)
-        self.currentTime.setGeometry(QtCore.QRect(60, 190, 81, 16))
+        self.currentTime = QtWidgets.QLabel(parent=self.info)
+        self.currentTime.setGeometry(QtCore.QRect(10, 140, 81, 16))
         self.currentTime.setStyleSheet("QLabel {\n"
 "font: 75 10pt \"MS Shell Dlg 2\";\n"
 "    color: white;\n"
 "}")
         self.currentTime.setObjectName("currentTime")
-        self.totalTime = QtWidgets.QLabel(parent=self.widget_2)
-        self.totalTime.setGeometry(QtCore.QRect(550, 190, 81, 16))
+        self.totalTime = QtWidgets.QLabel(parent=self.info)
+        self.totalTime.setGeometry(QtCore.QRect(500, 140, 81, 16))
         self.totalTime.setStyleSheet("QLabel {\n"
 "font: 75 10pt \"MS Shell Dlg 2\";\n"
 "    color: white;\n"
 "}")
         self.totalTime.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.totalTime.setObjectName("totalTime")
-        self.song_title = QtWidgets.QLabel(parent=self.widget_2)
-        self.song_title.setGeometry(QtCore.QRect(60, 50, 571, 71))
+        self.song_title = QtWidgets.QLabel(parent=self.info)
+        self.song_title.setGeometry(QtCore.QRect(0, 0, 601, 71))
         self.song_title.setStyleSheet("QLabel {\n"
 "    color: white;\n"
 "    text-transform: uppercase;\n"
@@ -104,8 +109,74 @@ class Ui_Dialog(object):
 "}")
         self.song_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.song_title.setObjectName("song_title")
+        self.stackedWidget.addWidget(self.info)
+        self.page_2 = QtWidgets.QWidget()
+        self.page_2.setStyleSheet("")
+        self.page_2.setObjectName("page_2")
+        self.frame = QtWidgets.QFrame(parent=self.page_2)
+        self.frame.setGeometry(QtCore.QRect(-1, -1, 601, 231))
+        self.frame.setStyleSheet("background-color: rgb(0, 0, 0);")
+        self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.frame.setObjectName("frame")
+        self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.frame)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(40, 20, 521, 191))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.list_layout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.list_layout.setContentsMargins(0, 0, 0, 0)
+        self.list_layout.setObjectName("list_layout")
+        self.stackedWidget.addWidget(self.page_2)
+        self.widget1 = QtWidgets.QWidget(parent=self.widget_2)
+        self.widget1.setGeometry(QtCore.QRect(220, 20, 261, 41))
+        self.widget1.setObjectName("widget1")
+        self.tabs = QtWidgets.QHBoxLayout(self.widget1)
+        self.tabs.setContentsMargins(0, 0, 0, 0)
+        self.tabs.setSpacing(0)
+        self.tabs.setObjectName("tabs")
+        self.playback_tab = QtWidgets.QPushButton(parent=self.widget1)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.playback_tab.sizePolicy().hasHeightForWidth())
+        self.playback_tab.setSizePolicy(sizePolicy)
+        self.playback_tab.setStyleSheet("QPushButton {\n"
+"    color: rgb(255, 255, 255);\n"
+"    border: 2px solid white;\n"
+"    border-top-left-radius: 20px;\n"
+"    border-bottom-left-radius: 20px;\n"
+"}\n"
+"QPushButton:checked {\n"
+"    color: rgb(255, 255, 255);\n"
+"    background-color: #1DB954;\n"
+"}")
+        self.playback_tab.setCheckable(True)
+        self.playback_tab.setChecked(True)
+        self.playback_tab.setAutoExclusive(True)
+        self.playback_tab.setObjectName("playback_tab")
+        self.tabs.addWidget(self.playback_tab)
+        self.list_tab = QtWidgets.QPushButton(parent=self.widget1)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.list_tab.sizePolicy().hasHeightForWidth())
+        self.list_tab.setSizePolicy(sizePolicy)
+        self.list_tab.setStyleSheet("QPushButton {\n"
+"    color: rgb(255, 255, 255);\n"
+"    border: 2px solid white;\n"
+"    border-top-right-radius: 20px;\n"
+"    border-bottom-right-radius: 20px;\n"
+"}\n"
+"QPushButton:checked {\n"
+"    color: rgb(255, 255, 255);\n"
+"    background-color: #1DB954;\n"
+"}")
+        self.list_tab.setCheckable(True)
+        self.list_tab.setAutoExclusive(True)
+        self.list_tab.setObjectName("list_tab")
+        self.tabs.addWidget(self.list_tab)
 
         self.retranslateUi(Dialog)
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -114,3 +185,5 @@ class Ui_Dialog(object):
         self.currentTime.setText(_translate("Dialog", "0:00"))
         self.totalTime.setText(_translate("Dialog", "0:00"))
         self.song_title.setText(_translate("Dialog", "Song Title"))
+        self.playback_tab.setText(_translate("Dialog", "Song"))
+        self.list_tab.setText(_translate("Dialog", "List"))
