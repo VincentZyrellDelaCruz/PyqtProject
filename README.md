@@ -33,5 +33,6 @@ __Example:__
 
 `python -m PyQt6.uic.pyuic UI/music_player.ui -o UI/music_player_ui.py`
 
-
-
+**SQLite**
+If you want to test the Database:
+`python test_auth.py`
