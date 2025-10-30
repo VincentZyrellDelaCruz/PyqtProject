@@ -180,7 +180,7 @@ border-radius: 50px;</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>100</y>
+         <y>130</y>
          <width>571</width>
          <height>31</height>
         </rect>
@@ -201,7 +201,7 @@ border-radius: 50px;</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>140</y>
+         <y>170</y>
          <width>81</width>
          <height>16</height>
         </rect>
@@ -220,14 +220,14 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
        <property name="geometry">
         <rect>
          <x>500</x>
-         <y>140</y>
+         <y>170</y>
          <width>81</width>
          <height>16</height>
         </rect>
        </property>
        <property name="styleSheet">
         <string notr="true">QLabel {
-font: 75 10pt &quot;MS Shell Dlg 2&quot;;
+	font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 	color: white;
 }</string>
        </property>
@@ -252,6 +252,29 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 	color: white;
 	text-transform: uppercase;
 	font: 75 20pt &quot;MS Shell Dlg 2&quot;;
+	font-weight: bold;
+}</string>
+       </property>
+       <property name="text">
+        <string>Song Title</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="artist_name">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>50</y>
+         <width>601</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel {
+	color: white;
+	font: 75 16pt &quot;MS Shell Dlg 2&quot;;
 }</string>
        </property>
        <property name="text">
@@ -298,7 +321,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>220</x>
@@ -378,11 +401,160 @@ QPushButton:checked {
       </item>
      </layout>
     </widget>
+    <widget class="QPushButton" name="loop_shuffle">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>390</y>
+       <width>51</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+	color: white;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/icons/continue.svg</normaloff>:/icons/continue.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="volume">
+     <property name="geometry">
+      <rect>
+       <x>590</x>
+       <y>390</y>
+       <width>51</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+	color: white;
+	border-radius: 20px;
+}
+
+QPushButton:checked {
+	background-color: #1DB954;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/icons/volume-up.svg</normaloff>:/icons/volume-up.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="volume_frame">
+     <property name="geometry">
+      <rect>
+       <x>540</x>
+       <y>330</y>
+       <width>44</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QFrame {
+	
+	background-color: rgb(33, 33, 33);
+	border-radius: 20px;
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="volume_label">
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+	font: 75 10pt &quot;MS Shell Dlg 2&quot;;
+	color: white;
+}</string>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="volume_slider">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QSlider {
+	background: transparent;
+}</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
   </widget>
  </widget>
  <resources>
   <include location="../assets/resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>volume</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>volume_frame</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1074</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1041</x>
+     <y>464</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

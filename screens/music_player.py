@@ -1,11 +1,11 @@
 from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtCore import Qt, QUrl, QTimer, QByteArray
+from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
 from functools import partial
 from UI.music_player_ui import Ui_Dialog
 from eyed3.id3.frames import ImageFrame
-import sys, os, config, eyed3
+import sys, os, random, config, eyed3
 
 # Temporary variables
 # song_title = 'Never Gonna Give You Up.mp3'
@@ -14,6 +14,8 @@ import sys, os, config, eyed3
 class MusicPlayer(QDialog):
     def __init__(self):
         super().__init__()
+
+        # Loads the UI
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
@@ -21,37 +23,49 @@ class MusicPlayer(QDialog):
         local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
         self.song_title = local_playlist[1] if local_playlist else ""
 
+        # Sets to continue/non-loop by default
+        self.repeat = 0
+
+        # Sets rotation for pixmap
         self.rotation_angle = 0
         self.rotation_timer = QTimer(self)
 
         self.button_group = QButtonGroup(self)
-        self.button_group.setExclusive(True)
 
         self.display_local_playlist(local_playlist)
 
+        # Sets audio
         self.audio_output = QAudioOutput()
         self.player = QMediaPlayer()
-        self.player.setAudioOutput(self.audio_output)
 
         self.load_music()
 
-        self.init_ui()
+        # Marquee-like effect
+        self.scroll_timer = QTimer(self)
+        self.scroll_timer.timeout.connect(self.scroll_artist_name)
+        self.scroll_offset = 0
+        self.artist_full_text = ""
+        self.scroll_timer.start(150)  # speed (ms)
 
         self.isPlaying = True
-        self.ui.playButton.clicked.connect(self.toggle_play_pause)
 
-        self.player.positionChanged.connect(self.update_position)
-        self.player.durationChanged.connect(self.update_duration)
-
-        self.ui.progressTime.sliderPressed.connect(self.slider_pressed)
-        self.ui.progressTime.sliderReleased.connect(self.slider_released)
+        self.init_ui()
 
         self.play()
 
     def init_ui(self):
+        # Sets icon for each push buttons
         self.ui.playButton.setIcon(QIcon(config.ICON_PATH + "play.svg"))
         self.ui.nextButton.setIcon(QIcon(config.ICON_PATH + "next.svg"))
         self.ui.prevButton.setIcon(QIcon(config.ICON_PATH + "prev.svg"))
+        self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "continue.svg"))
+        self.ui.volume.setIcon(QIcon(config.ICON_PATH + "volume-up.svg"))
+
+        self.ui.loop_shuffle.clicked.connect(self.loop_shuffle)
+
+        self.ui.volume_frame.setVisible(False)
+        self.button_group.setExclusive(True)
+        self.player.setAudioOutput(self.audio_output)
 
         self.ui.playback_tab.clicked.connect(self.switch_to_playback)
         self.ui.list_tab.clicked.connect(self.switch_to_playlist)
@@ -59,6 +73,17 @@ class MusicPlayer(QDialog):
         self.rotation_timer.timeout.connect(self.spin_pixmap)
         self.rotation_timer.start(30)  # ~33 FPS
 
+        self.ui.playButton.clicked.connect(self.toggle_play_pause)
+
+        self.player.positionChanged.connect(self.update_position)
+        self.player.durationChanged.connect(self.update_duration)
+
+        self.player.mediaStatusChanged.connect(self.check_song_end)
+
+        self.ui.progressTime.sliderPressed.connect(self.slider_pressed)
+        self.ui.progressTime.sliderReleased.connect(self.slider_released)
+
+    # Function that gets selected music/song file, including its metadata (images and artist).
     def load_music(self):
         song_path = os.path.join(config.LOCAL_MUSIC_PATH + self.song_title)
 
@@ -78,6 +103,11 @@ class MusicPlayer(QDialog):
             if audiofile and audiofile.tag:
                 image_data = None
 
+                artist = audiofile.tag.artist if audiofile.tag.artist else "Unknown Artist"
+                self.artist_full_text = artist
+                self.scroll_offset = 0
+                self.ui.artist_name.setText(artist)
+
                 for image in audiofile.tag.images:
                     if image.picture_type == ImageFrame.FRONT_COVER:
                         image_data = image.image_data
@@ -96,6 +126,10 @@ class MusicPlayer(QDialog):
         except Exception as e:
             print("Error extraction album art: ", e )
 
+        # If artist name not set due to missing tag, set default
+        if not getattr(self.ui.artist_name, "text", lambda: "")():
+            self.ui.artist_name.setText("Unknown Artist")
+
         if not pixmap or pixmap.isNull():
             fallback_path = os.path.join(config.IMAGE_PATH, "default.png")
             pixmap = QPixmap(fallback_path)
@@ -105,11 +139,13 @@ class MusicPlayer(QDialog):
             self.fixed_pixmap = cd_pixmap
             self.ui.spinner.setPixmap(cd_pixmap)
 
+    # Function that changes the song
     def change_music(self, song):
         self.song_title = song
         self.load_music()
         self.play()
 
+    # Displays all songs inside the assigned folder
     def display_local_playlist(self, local_playlist=None):
         if local_playlist is None:
             return
@@ -152,6 +188,29 @@ class MusicPlayer(QDialog):
         self.ui.list_layout.addWidget(scroll_area)
 
         # print(''.join(filename for filename in filenames))
+
+    def scroll_artist_name(self):
+        label = self.ui.artist_name
+        text = self.artist_full_text
+
+        if not text:
+            return
+
+        fm = label.fontMetrics()
+        text_width = fm.horizontalAdvance(text)
+        label_width = label.width()
+
+        # Only scroll if text is wider than label
+        if text_width > label_width:
+            self.scroll_offset = (self.scroll_offset + 3) % (text_width + 30)
+            # Padding spaces so the text restarts smoothly
+            display_text = text + "   " + text
+            label.setText(display_text)
+            label.setIndent(-self.scroll_offset)
+        else:
+            # Reset text alignment when short
+            label.setText(text)
+            label.setIndent(0)
 
     @staticmethod
     def cd_pixmap(pixmap, size, hole_ratio = 0.25):
@@ -237,6 +296,21 @@ class MusicPlayer(QDialog):
         self.ui.playButton.setIcon(QIcon(config.ICON_PATH + "play.svg"))
         self.pause_spin()
 
+    def loop_shuffle(self):
+        self.repeat += 1
+
+        if self.repeat >= 3: self.repeat = 0
+
+        if self.repeat == 0:
+            self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "continue.svg"))
+            print('continue')
+        elif self.repeat == 1:
+            self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "loop.svg"))
+            print('loop')
+        elif self.repeat == 2:
+            self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "shuffle.svg"))
+            print('shuffle')
+
     def start_spin(self):
         if hasattr(self, "rotation_timer") and not self.rotation_timer.isActive():
             self.rotation_timer.start(30)
@@ -272,6 +346,30 @@ class MusicPlayer(QDialog):
         minutes = seconds // 60
         seconds = seconds % 60
         return f"{minutes:02}:{seconds:02}"
+
+    # Function that interacts after the song ends (3 modes)
+    def check_song_end(self, status):
+        # Check if the current song has ended
+        if status == QMediaPlayer.MediaStatus.EndOfMedia:
+            # Loop mode
+            # Continue mode (play next)
+            if self.repeat == 0:
+                print("Continue mode - next song")
+                local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
+                current_index = local_playlist.index(self.song_title)
+                next_index = (current_index + 1) % len(local_playlist)
+                self.change_music(local_playlist[next_index])
+            elif self.repeat == 1:
+                print("Looping current song...")
+                self.player.setPosition(0)
+                self.player.play()
+            # Shuffle mode
+            elif self.repeat == 2:
+                print("Shuffle mode - random song")
+                local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
+
+                next_song = random.choice(local_playlist)
+                self.change_music(next_song)
 
 
 if __name__ == "__main__":

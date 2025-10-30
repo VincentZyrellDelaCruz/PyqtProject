@@ -1,5 +1,13 @@
 <RCC>
   <qresource>
+    <file>icons/volume-down.svg</file>
+    <file>icons/volume-mute.svg</file>
+    <file>icons/volume-up.svg</file>
+    <file>icons/continue.svg</file>
+    <file>icons/skip-start.svg</file>
+    <file>icons/skip-end.svg</file>
+    <file>icons/shuffle.svg</file>
+    <file>icons/loop.svg</file>
     <file>icons/prev.svg</file>
     <file>icons/next.svg</file>
     <file>icons/pause.svg</file>

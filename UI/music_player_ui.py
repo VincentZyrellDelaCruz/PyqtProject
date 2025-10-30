@@ -78,7 +78,7 @@ class Ui_Dialog(object):
         self.info = QtWidgets.QWidget()
         self.info.setObjectName("info")
         self.progressTime = QtWidgets.QSlider(parent=self.info)
-        self.progressTime.setGeometry(QtCore.QRect(10, 100, 571, 31))
+        self.progressTime.setGeometry(QtCore.QRect(10, 130, 571, 31))
         self.progressTime.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.progressTime.setStyleSheet("QSlider {\n"
 "    \n"
@@ -86,16 +86,16 @@ class Ui_Dialog(object):
         self.progressTime.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.progressTime.setObjectName("progressTime")
         self.currentTime = QtWidgets.QLabel(parent=self.info)
-        self.currentTime.setGeometry(QtCore.QRect(10, 140, 81, 16))
+        self.currentTime.setGeometry(QtCore.QRect(10, 170, 81, 16))
         self.currentTime.setStyleSheet("QLabel {\n"
 "font: 75 10pt \"MS Shell Dlg 2\";\n"
 "    color: white;\n"
 "}")
         self.currentTime.setObjectName("currentTime")
         self.totalTime = QtWidgets.QLabel(parent=self.info)
-        self.totalTime.setGeometry(QtCore.QRect(500, 140, 81, 16))
+        self.totalTime.setGeometry(QtCore.QRect(500, 170, 81, 16))
         self.totalTime.setStyleSheet("QLabel {\n"
-"font: 75 10pt \"MS Shell Dlg 2\";\n"
+"    font: 75 10pt \"MS Shell Dlg 2\";\n"
 "    color: white;\n"
 "}")
         self.totalTime.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
@@ -106,9 +106,18 @@ class Ui_Dialog(object):
 "    color: white;\n"
 "    text-transform: uppercase;\n"
 "    font: 75 20pt \"MS Shell Dlg 2\";\n"
+"    font-weight: bold;\n"
 "}")
         self.song_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.song_title.setObjectName("song_title")
+        self.artist_name = QtWidgets.QLabel(parent=self.info)
+        self.artist_name.setGeometry(QtCore.QRect(0, 50, 601, 71))
+        self.artist_name.setStyleSheet("QLabel {\n"
+"    color: white;\n"
+"    font: 75 16pt \"MS Shell Dlg 2\";\n"
+"}")
+        self.artist_name.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.artist_name.setObjectName("artist_name")
         self.stackedWidget.addWidget(self.info)
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setStyleSheet("")
@@ -126,14 +135,14 @@ class Ui_Dialog(object):
         self.list_layout.setContentsMargins(0, 0, 0, 0)
         self.list_layout.setObjectName("list_layout")
         self.stackedWidget.addWidget(self.page_2)
-        self.widget1 = QtWidgets.QWidget(parent=self.widget_2)
-        self.widget1.setGeometry(QtCore.QRect(220, 20, 261, 41))
-        self.widget1.setObjectName("widget1")
-        self.tabs = QtWidgets.QHBoxLayout(self.widget1)
+        self.layoutWidget = QtWidgets.QWidget(parent=self.widget_2)
+        self.layoutWidget.setGeometry(QtCore.QRect(220, 20, 261, 41))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.tabs = QtWidgets.QHBoxLayout(self.layoutWidget)
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.tabs.setSpacing(0)
         self.tabs.setObjectName("tabs")
-        self.playback_tab = QtWidgets.QPushButton(parent=self.widget1)
+        self.playback_tab = QtWidgets.QPushButton(parent=self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -154,7 +163,7 @@ class Ui_Dialog(object):
         self.playback_tab.setAutoExclusive(True)
         self.playback_tab.setObjectName("playback_tab")
         self.tabs.addWidget(self.playback_tab)
-        self.list_tab = QtWidgets.QPushButton(parent=self.widget1)
+        self.list_tab = QtWidgets.QPushButton(parent=self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -174,9 +183,70 @@ class Ui_Dialog(object):
         self.list_tab.setAutoExclusive(True)
         self.list_tab.setObjectName("list_tab")
         self.tabs.addWidget(self.list_tab)
+        self.loop_shuffle = QtWidgets.QPushButton(parent=self.widget_2)
+        self.loop_shuffle.setGeometry(QtCore.QRect(50, 390, 51, 41))
+        self.loop_shuffle.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.loop_shuffle.setStyleSheet("QPushButton {\n"
+"    color: white;\n"
+"}")
+        self.loop_shuffle.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/icons/continue.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.loop_shuffle.setIcon(icon3)
+        self.loop_shuffle.setIconSize(QtCore.QSize(30, 30))
+        self.loop_shuffle.setObjectName("loop_shuffle")
+        self.volume = QtWidgets.QPushButton(parent=self.widget_2)
+        self.volume.setGeometry(QtCore.QRect(590, 390, 51, 41))
+        self.volume.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.volume.setStyleSheet("QPushButton {\n"
+"    color: white;\n"
+"    border-radius: 20px;\n"
+"}\n"
+"\n"
+"QPushButton:checked {\n"
+"    background-color: #1DB954;\n"
+"}")
+        self.volume.setText("")
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(":/icons/volume-up.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.volume.setIcon(icon4)
+        self.volume.setIconSize(QtCore.QSize(30, 30))
+        self.volume.setCheckable(True)
+        self.volume.setChecked(False)
+        self.volume.setObjectName("volume")
+        self.volume_frame = QtWidgets.QFrame(parent=self.widget_2)
+        self.volume_frame.setGeometry(QtCore.QRect(540, 330, 41, 151))
+        self.volume_frame.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
+        self.volume_frame.setStyleSheet("QFrame {\n"
+"    \n"
+"    background-color: rgb(33, 33, 33);\n"
+"    border-radius: 20px;\n"
+"}")
+        self.volume_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.volume_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.volume_frame.setObjectName("volume_frame")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.volume_frame)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.volume_label = QtWidgets.QLabel(parent=self.volume_frame)
+        self.volume_label.setStyleSheet("QLabel {\n"
+"    font: 75 10pt \"MS Shell Dlg 2\";\n"
+"    color: white;\n"
+"}")
+        self.volume_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.volume_label.setObjectName("volume_label")
+        self.verticalLayout.addWidget(self.volume_label)
+        self.volume_slider = QtWidgets.QSlider(parent=self.volume_frame)
+        self.volume_slider.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
+        self.volume_slider.setStyleSheet("QSlider {\n"
+"    background: transparent;\n"
+"}")
+        self.volume_slider.setOrientation(QtCore.Qt.Orientation.Vertical)
+        self.volume_slider.setObjectName("volume_slider")
+        self.verticalLayout.addWidget(self.volume_slider)
 
         self.retranslateUi(Dialog)
         self.stackedWidget.setCurrentIndex(0)
+        self.volume.toggled['bool'].connect(self.volume_frame.setVisible) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -185,5 +255,7 @@ class Ui_Dialog(object):
         self.currentTime.setText(_translate("Dialog", "0:00"))
         self.totalTime.setText(_translate("Dialog", "0:00"))
         self.song_title.setText(_translate("Dialog", "Song Title"))
+        self.artist_name.setText(_translate("Dialog", "Song Title"))
         self.playback_tab.setText(_translate("Dialog", "Song"))
         self.list_tab.setText(_translate("Dialog", "List"))
+        self.volume_label.setText(_translate("Dialog", "0"))
