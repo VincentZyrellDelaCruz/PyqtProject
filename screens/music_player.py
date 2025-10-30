@@ -21,7 +21,7 @@ class MusicPlayer(QDialog):
 
         # Gets all existing music file inside local_music folder
         local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-        self.song_title = local_playlist[1] if local_playlist else ""
+        self.song_title = local_playlist[0] if local_playlist else ""
 
         # Sets to continue/non-loop by default
         self.repeat = 0
@@ -52,6 +52,12 @@ class MusicPlayer(QDialog):
         self.init_ui()
 
         self.play()
+
+    def closeEvent(self, event):
+        """Override close event to stop playback when dialog is closed"""
+        self.player.stop()
+        self.rotation_timer.stop()
+        event.accept()
 
     def init_ui(self):
         # Sets icon for each push buttons

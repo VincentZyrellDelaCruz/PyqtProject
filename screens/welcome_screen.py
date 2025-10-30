@@ -17,10 +17,16 @@ class WelcomeScreen(QDialog):
 
     # For customizing outside Qt Designer
     def init_ui(self):
-        pixmap = QPixmap(f"{config.IMAGE_PATH}reels.jpg")
+        import os
+        image_path = os.path.join(config.IMAGE_PATH, "reels.jpg")
+        print(f"Trying to load image from: {image_path}")
+        print(f"Image exists: {os.path.exists(image_path)}")
+        
+        pixmap = QPixmap(image_path)
 
         if not pixmap.isNull():
             self.ui.img_label.setPixmap(pixmap)
             self.ui.img_label.setScaledContents(True)
+            print("Image loaded successfully!")
         else:
-            print(f"Failed to load image.")
+            print(f"Failed to load image from: {image_path}")

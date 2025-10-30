@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'UI/login_screen.ui'
+# Form implementation generated from reading ui file 'UI/signup_screen.ui'
 #
 # Created by: PyQt6 UI code generator 6.10.0
 #
@@ -15,7 +15,7 @@ class Ui_Dialog(object):
         Dialog.resize(1000, 667)
         self.widget_2 = QtWidgets.QWidget(parent=Dialog)
         self.widget_2.setEnabled(True)
-        self.widget_2.setGeometry(QtCore.QRect(-1, -1, 1001, 671))
+        self.widget_2.setGeometry(QtCore.QRect(0, 0, 1001, 671))
         self.widget_2.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.widget_2.setObjectName("widget_2")
         self.frame_2 = QtWidgets.QFrame(parent=self.widget_2)
@@ -27,21 +27,22 @@ class Ui_Dialog(object):
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.frame_2.setObjectName("frame_2")
         self.label_2 = QtWidgets.QLabel(parent=self.frame_2)
-        self.label_2.setGeometry(QtCore.QRect(80, 240, 211, 51))
+        self.label_2.setGeometry(QtCore.QRect(80, 200, 211, 91))
         self.label_2.setStyleSheet("color: rgb(255, 255, 255);\n"
 "font: 22pt \"MS Shell Dlg 2\";\n"
 "background-color: transparent; ")
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_2.setWordWrap(True)
         self.label_2.setObjectName("label_2")
-        self.signup_btn = QtWidgets.QPushButton(parent=self.frame_2)
-        self.signup_btn.setGeometry(QtCore.QRect(50, 320, 271, 55))
+        self.login_btn = QtWidgets.QPushButton(parent=self.frame_2)
+        self.login_btn.setGeometry(QtCore.QRect(50, 320, 271, 55))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.signup_btn.sizePolicy().hasHeightForWidth())
-        self.signup_btn.setSizePolicy(sizePolicy)
-        self.signup_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.signup_btn.setStyleSheet("QPushButton {\n"
+        sizePolicy.setHeightForWidth(self.login_btn.sizePolicy().hasHeightForWidth())
+        self.login_btn.setSizePolicy(sizePolicy)
+        self.login_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.login_btn.setStyleSheet("QPushButton {\n"
 "color: white;\n"
 "background-color: transparent;\n"
 "border: 3px solid white;\n"
@@ -52,32 +53,23 @@ class Ui_Dialog(object):
 "    background-color: rgb(255, 255, 255);\n"
 "    color: black;\n"
 "}")
-        self.signup_btn.setObjectName("signup_btn")
-        self.login_label = QtWidgets.QLabel(parent=self.widget_2)
-        self.login_label.setGeometry(QtCore.QRect(170, 90, 271, 61))
-        self.login_label.setStyleSheet("font: 75 36pt \"Tw Cen MT\";\n"
+        self.login_btn.setObjectName("login_btn")
+        self.signup_label = QtWidgets.QLabel(parent=self.widget_2)
+        self.signup_label.setGeometry(QtCore.QRect(170, 90, 271, 61))
+        self.signup_label.setStyleSheet("font: 75 36pt \"Tw Cen MT\";\n"
 "color: black;\n"
 "")
-        self.login_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.login_label.setObjectName("login_label")
-        self.remember = QtWidgets.QCheckBox(parent=self.widget_2)
-        self.remember.setGeometry(QtCore.QRect(60, 370, 161, 20))
-        self.remember.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.remember.setStyleSheet("QCheckBox {\n"
-"    color: black;\n"
-"    font: 12pt \"MS Shell Dlg 2\";\n"
-"}")
-        self.remember.setChecked(False)
-        self.remember.setObjectName("remember")
-        self.login_btn = QtWidgets.QPushButton(parent=self.widget_2)
-        self.login_btn.setGeometry(QtCore.QRect(60, 440, 511, 61))
+        self.signup_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.signup_label.setObjectName("signup_label")
+        self.signup_btn = QtWidgets.QPushButton(parent=self.widget_2)
+        self.signup_btn.setGeometry(QtCore.QRect(60, 440, 511, 61))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.login_btn.sizePolicy().hasHeightForWidth())
-        self.login_btn.setSizePolicy(sizePolicy)
-        self.login_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.login_btn.setStyleSheet("QPushButton {\n"
+        sizePolicy.setHeightForWidth(self.signup_btn.sizePolicy().hasHeightForWidth())
+        self.signup_btn.setSizePolicy(sizePolicy)
+        self.signup_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.signup_btn.setStyleSheet("QPushButton {\n"
 "color: white;\n"
 "background-color: qlineargradient(spread:reflect, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(37, 172, 48, 255), stop:1 rgba(141, 178, 35, 255));\n"
 "border: 3px solid white;\n"
@@ -92,7 +84,7 @@ class Ui_Dialog(object):
 "    stop:1 rgba(181, 208, 85, 255)\n"
 ");\n"
 "}")
-        self.login_btn.setObjectName("login_btn")
+        self.signup_btn.setObjectName("signup_btn")
         self.layoutWidget = QtWidgets.QWidget(parent=self.widget_2)
         self.layoutWidget.setGeometry(QtCore.QRect(60, 200, 501, 151))
         self.layoutWidget.setObjectName("layoutWidget")
@@ -148,10 +140,9 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label_2.setText(_translate("Dialog", "First Time?"))
-        self.signup_btn.setText(_translate("Dialog", "Sign Up"))
-        self.login_label.setText(_translate("Dialog", "LOG IN"))
-        self.remember.setText(_translate("Dialog", "Remember Me"))
+        self.label_2.setText(_translate("Dialog", "Already have an account?"))
         self.login_btn.setText(_translate("Dialog", "Log In"))
+        self.signup_label.setText(_translate("Dialog", "SIGN UP"))
+        self.signup_btn.setText(_translate("Dialog", "Sign Up"))
         self.lineEdit.setPlaceholderText(_translate("Dialog", "Username"))
         self.lineEdit_2.setPlaceholderText(_translate("Dialog", "Password"))
