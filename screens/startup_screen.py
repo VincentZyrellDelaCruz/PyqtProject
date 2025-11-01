@@ -13,7 +13,7 @@ class StartupScreen(QDialog):
         self.app_controller = app_controller
         self.init_ui()
 
-        QTimer.singleShot(3000, self.app_controller.goto_welcome)
+        QTimer.singleShot(3000, self.app_controller.goto_login)
 
         # self.ui.login_btn.clicked.connect(self.app_controller.goto_login)
 
