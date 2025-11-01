@@ -2,6 +2,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QStackedWidget
 
 from screens.main_screen import MainScreen
+from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
 # Removed signup_screen import - no registration needed
@@ -15,6 +16,7 @@ class AppController:
 
         self.widget.setWindowTitle('GUI Project')
 
+        self.startup = StartupScreen(self)
         self.welcome = WelcomeScreen(self)
         self.login = LoginScreen(self)
         # Removed signup screen - no registration needed
@@ -22,8 +24,8 @@ class AppController:
 
         self.add_widget_stack()
 
-        # Start on welcome screen instead of main screen
-        self.widget.setCurrentWidget(self.main)
+        # Start on startup screen
+        self.widget.setCurrentWidget(self.startup)
 
         self.widget.setFixedSize(*config.WINDOW_SIZE)
         self.center_widget()
@@ -31,6 +33,7 @@ class AppController:
         self.widget.show()
 
     def add_widget_stack(self):
+        self.widget.addWidget(self.startup)
         self.widget.addWidget(self.welcome)
         self.widget.addWidget(self.login)
         # Removed signup widget - no registration needed

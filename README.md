@@ -17,6 +17,9 @@ python -m PyQt6.uic.pyuic UI/'name of ui' -o UI/'name of python file'
 
 __Example:__
 
+**Startup Screen**
+`python -m PyQt6.uic.pyuic UI/startup_screen.ui -o UI/startup_screen_ui.py`
+
 **Welcome Screen**
 
 `python -m PyQt6.uic.pyuic UI/welcome_screen.ui -o UI/welcome_screen_ui.py`

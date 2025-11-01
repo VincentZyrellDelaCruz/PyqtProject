@@ -1,7 +1,7 @@
 from functools import partial
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QButtonGroup, QScrollArea, QWidget
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QIcon, QFont, QPixmap
 from UI.main_screen_ui import Ui_MainWindow
 import config, os
 import controllers.music_metadata as metadata
@@ -22,6 +22,13 @@ class MainScreen(QMainWindow):
         self.display_local_playlist()
 
     def init_ui(self):
+        pixmap1 = QPixmap(config.IMAGE_PATH + 'μsic_sync-removebg.png').scaled(
+            150, 150)
+        self.ui.logo_1.setPixmap(pixmap1)
+
+        pixmap2 = QPixmap(config.IMAGE_PATH + 'μsic_sync_with_name-removebg.png').scaled(
+            200, 100)
+        self.ui.logo_2.setPixmap(pixmap2)
 
         self.ui.home1.setIcon(QIcon(config.ICON_PATH + 'music.png'))
         self.ui.home2.setIcon(QIcon(config.ICON_PATH + 'music.png'))
