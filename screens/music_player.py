@@ -6,13 +6,15 @@ from functools import partial
 from UI.music_player_ui import Ui_Dialog
 from eyed3.id3.frames import ImageFrame
 import sys, os, random, config, eyed3
+from controllers.music_metadata import get_music_metadata
+
 
 # Temporary variables
 # song_title = 'Never Gonna Give You Up.mp3'
 # song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
 
 class MusicPlayer(QDialog):
-    def __init__(self):
+    def __init__(self, song_title):
         super().__init__()
 
         # Loads the UI
@@ -21,7 +23,8 @@ class MusicPlayer(QDialog):
 
         # Gets all existing music file inside local_music folder
         local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-        self.song_title = local_playlist[0] if local_playlist else ""
+        self.song_title = song_title
+        # self.song_title = local_playlist[0] if local_playlist else ""
 
         # Sets to continue/non-loop by default
         self.repeat = 0
@@ -103,57 +106,25 @@ class MusicPlayer(QDialog):
 
     # Function that gets selected music/song file, including its metadata (images and artist).
     def load_music(self):
-        song_path = os.path.join(config.LOCAL_MUSIC_PATH + self.song_title)
-
-        # Checks if the song is inside the assigned local music folder
+        song_path = os.path.join(config.LOCAL_MUSIC_PATH, self.song_title)
         if not os.path.exists(song_path):
             print("Song file not found:", song_path)
             return
 
         self.player.setSource(QUrl.fromLocalFile(song_path))
         self.ui.song_title.setText(os.path.basename(song_path).removesuffix('.mp3'))
-        self.setWindowTitle('Now playing: ' + self.song_title.replace('.mp3', '_'))
+        self.setWindowTitle('Now playing: ' + self.song_title.replace('.mp3', ''))
 
-        # For extracting music file's embedded image
-        pixmap = None
-        try:
-            audiofile = eyed3.load(song_path)
-            if audiofile and audiofile.tag:
-                image_data = None
+        # Get metadata (artist + album art)
+        artist, pixmap = get_music_metadata(song_path)
+        self.artist_full_text = artist
+        self.scroll_offset = 0
+        self.ui.artist_name.setText(artist)
 
-                artist = audiofile.tag.artist if audiofile.tag.artist else "Unknown Artist"
-                self.artist_full_text = artist
-                self.scroll_offset = 0
-                self.ui.artist_name.setText(artist)
-
-                for image in audiofile.tag.images:
-                    if image.picture_type == ImageFrame.FRONT_COVER:
-                        image_data = image.image_data
-                        break
-
-                if not image_data and audiofile.tag.images:
-                    image_data = list(audiofile.tag.images)[0].image_data
-
-                if image_data:
-                    pixmap = QPixmap()
-                    if pixmap.loadFromData(image_data):
-                        print("Album art loaded from:", song_path)
-                    else:
-                        pixmap = None
-
-        except Exception as e:
-            print("Error extraction album art: ", e )
-
-        # If artist name not set due to missing tag, set default
-        if not getattr(self.ui.artist_name, "text", lambda: "")():
-            self.ui.artist_name.setText("Unknown Artist")
-
-        if not pixmap or pixmap.isNull():
-            fallback_path = os.path.join(config.IMAGE_PATH, "default.png")
-            pixmap = QPixmap(fallback_path)
-
+        # Ensure CD label display remains centered and fills properly
         if not pixmap.isNull():
-            cd_pixmap = self.cd_pixmap(pixmap, self.ui.spinner.width())
+            size = self.ui.spinner.width()
+            cd_pixmap = self.cd_pixmap(pixmap, size)
             self.fixed_pixmap = cd_pixmap
             self.ui.spinner.setPixmap(cd_pixmap)
 
@@ -389,9 +360,10 @@ class MusicPlayer(QDialog):
                 next_song = random.choice(local_playlist)
                 self.change_music(next_song)
 
-
+'''
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MusicPlayer()
     window.show()
     sys.exit(app.exec())
+'''

@@ -173,7 +173,7 @@ border-radius: 50px;</string>
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="info">
       <widget class="QSlider" name="progressTime">
