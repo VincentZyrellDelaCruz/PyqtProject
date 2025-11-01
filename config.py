@@ -11,4 +11,6 @@ IMAGE_PATH = os.path.join(BASE_DIR, 'assets', 'images') + os.sep
 ICON_PATH = os.path.join(BASE_DIR, 'assets', 'icons') + os.sep
 LOCAL_MUSIC_PATH = os.path.join(BASE_DIR, 'local_music') + os.sep
 
+DEFAULT_VOLUME = 50 # Temporary fixed volume
+
 API_KEYS = {} # Used to interact systems using API

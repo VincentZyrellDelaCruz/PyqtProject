@@ -89,6 +89,18 @@ class MusicPlayer(QDialog):
         self.ui.progressTime.sliderPressed.connect(self.slider_pressed)
         self.ui.progressTime.sliderReleased.connect(self.slider_released)
 
+        self.ui.volume_slider.setRange(0, 100)
+        self.ui.volume_slider.setValue(config.DEFAULT_VOLUME)
+        self.audio_output.setVolume(config.DEFAULT_VOLUME / 100)
+        self.ui.volume_label.setText(str(config.DEFAULT_VOLUME))
+
+        self.ui.volume_slider.valueChanged.connect(self.change_volume)
+
+    def change_volume(self, value):
+        volume = value / 100
+        self.audio_output.setVolume(volume)
+        self.ui.volume_label.setText(str(value))
+
     # Function that gets selected music/song file, including its metadata (images and artist).
     def load_music(self):
         song_path = os.path.join(config.LOCAL_MUSIC_PATH + self.song_title)
