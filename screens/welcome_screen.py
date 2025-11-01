@@ -13,7 +13,6 @@ class WelcomeScreen(QDialog):
         self.init_ui()
 
         self.ui.login_btn.clicked.connect(self.app_controller.goto_login)
-        self.ui.signup_btn.clicked.connect(self.app_controller.goto_signup)
 
     # For customizing outside Qt Designer
     def init_ui(self):

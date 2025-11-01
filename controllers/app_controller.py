@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QStackedWidget
 from screens.main_screen import MainScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
-from screens.signup_screen import SignupScreen
+# Removed signup_screen import - no registration needed
 from screens.main_screen import MainScreen
 from screens.music_player import MusicPlayer
 import config
@@ -17,7 +17,7 @@ class AppController:
 
         self.welcome = WelcomeScreen(self)
         self.login = LoginScreen(self)
-        self.signup = SignupScreen(self)
+        # Removed signup screen - no registration needed
         self.main = MainScreen(self)
 
         self.add_widget_stack()
@@ -33,7 +33,7 @@ class AppController:
     def add_widget_stack(self):
         self.widget.addWidget(self.welcome)
         self.widget.addWidget(self.login)
-        self.widget.addWidget(self.signup)
+        # Removed signup widget - no registration needed
         self.widget.addWidget(self.main)
 
     def center_widget(self):
@@ -47,8 +47,7 @@ class AppController:
     def goto_login(self):
         self.widget.setCurrentWidget(self.login)
 
-    def goto_signup(self):
-        self.widget.setCurrentWidget(self.signup)
+    # Removed goto_signup method - no registration needed
 
     def goto_welcome(self):
         self.widget.setCurrentWidget(self.welcome)
