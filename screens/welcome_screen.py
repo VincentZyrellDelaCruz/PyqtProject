@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui import QPixmap
 from UI.welcome_screen_ui import Ui_Dialog
-import config
+import config, os
 
 class WelcomeScreen(QDialog):
     def __init__(self, app_controller):
@@ -16,7 +16,6 @@ class WelcomeScreen(QDialog):
 
     # For customizing outside Qt Designer
     def init_ui(self):
-        import os
         image_path = os.path.join(config.IMAGE_PATH, "reels.jpg")
         print(f"Trying to load image from: {image_path}")
         print(f"Image exists: {os.path.exists(image_path)}")
