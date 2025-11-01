@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QStackedWidget
 
 from screens.main_screen import MainScreen
@@ -8,13 +8,15 @@ from screens.login_screen import LoginScreen
 # Removed signup_screen import - no registration needed
 from screens.main_screen import MainScreen
 from screens.music_player import MusicPlayer
-import config
+import config, os
 
 class AppController:
     def __init__(self):
         self.widget = QStackedWidget()
 
-        self.widget.setWindowTitle('GUI Project')
+        self.widget.setWindowTitle('μsic sync')
+        icon_path = os.path.join(config.IMAGE_PATH, "μsic_sync-removebg.png")
+        self.widget.setWindowIcon(QIcon(icon_path))
 
         self.startup = StartupScreen(self)
         self.welcome = WelcomeScreen(self)
