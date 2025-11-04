@@ -61,12 +61,11 @@ class AppController:
         self.widget.setCurrentWidget(self.main)
 
     def goto_local(self):
-        # Open music player as a dialog
-        # music_player = MusicPlayer()
-        # music_player.exec()
+        self.main.ui.page_label.setText('LOCAL PLAY')
         self.main.ui.home_stack.setCurrentIndex(1)
 
     def goto_home(self):
+        self.main.ui.page_label.setText('HOME')
         self.main.ui.home_stack.setCurrentIndex(0)
 
     def open_music_player(self, song_title):
