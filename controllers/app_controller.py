@@ -1,13 +1,14 @@
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QStackedWidget
+from PyQt6.QtCore import Qt
 
 from screens.main_screen import MainScreen
 from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
-# Removed signup_screen import - no registration needed
+
 from screens.main_screen import MainScreen
-from screens.music_player import MusicPlayer
+from screens.profile_screen import ProfileScreen
 import config, os
 
 class AppController:
@@ -17,6 +18,17 @@ class AppController:
         self.widget.setWindowTitle('μsic sync')
         icon_path = os.path.join(config.IMAGE_PATH, "μsic_sync-removebg.png")
         self.widget.setWindowIcon(QIcon(icon_path))
+        
+        # Set window flags for proper desktop app behavior
+        self.widget.setWindowFlags(Qt.WindowType.Window)
+        
+        # Enable window controls (minimize, maximize, close)
+        self.widget.setWindowFlags(
+            Qt.WindowType.Window |
+            Qt.WindowType.WindowMinimizeButtonHint |
+            Qt.WindowType.WindowMaximizeButtonHint |
+            Qt.WindowType.WindowCloseButtonHint
+        )
 
         self.startup = StartupScreen(self)
         self.welcome = WelcomeScreen(self)
@@ -29,10 +41,14 @@ class AppController:
         # Start on startup screen
         self.widget.setCurrentWidget(self.startup)
 
-        self.widget.setFixedSize(*config.WINDOW_SIZE)
+        # Set minimum and initial size for proper desktop app behavior
+        self.widget.setMinimumSize(1024, 768)  # Minimum usable size
+        self.widget.resize(1200, 800)  # Good default size that shows all controls
+        
         self.center_widget()
-
-        self.widget.show()
+        
+        # Show window normally (not maximized) so controls are visible
+        self.widget.showMaximized()
 
     def add_widget_stack(self):
         self.widget.addWidget(self.startup)
@@ -68,7 +84,13 @@ class AppController:
         self.main.ui.page_label.setText('HOME')
         self.main.ui.home_stack.setCurrentIndex(0)
 
+    def goto_profile(self):
+        self.main.ui.page_label.setText('USER PROFILE')
+        self.main.ui.home_stack.setCurrentIndex(2)
+
     def open_music_player(self, song_title):
-        music_player = MusicPlayer(song_title)
-        music_player.exec()
+        # Instead of opening a popup dialog, show music player in main screen
+        self.main.show_music_player(song_title)
+        self.main.ui.page_label.setText('NOW PLAYING')
+        self.main.ui.home_stack.setCurrentIndex(3)
 

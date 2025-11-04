@@ -13,48 +13,75 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(1000, 667)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(parent=Dialog)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(-1, -1, 1201, 801))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_2.setSpacing(0)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.frame = QtWidgets.QFrame(parent=self.horizontalLayoutWidget)
+        
+        # Create main layout for responsive design
+        self.main_layout = QtWidgets.QHBoxLayout(Dialog)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.main_layout.setObjectName("main_layout")
+        
+        self.frame = QtWidgets.QFrame(parent=Dialog)
         self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.frame.setObjectName("frame")
+        
+        # Layout for image to make it fill the frame
+        self.frame_layout = QtWidgets.QVBoxLayout(self.frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(0)
+        
         self.img_label = QtWidgets.QLabel(parent=self.frame)
-        self.img_label.setGeometry(QtCore.QRect(0, 0, 601, 671))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.img_label.setSizePolicy(sizePolicy)
         self.img_label.setText("")
         self.img_label.setPixmap(QtGui.QPixmap("UI\\../images/reels.jpg"))
         self.img_label.setScaledContents(True)
         self.img_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.img_label.setObjectName("img_label")
-        self.horizontalLayout_2.addWidget(self.frame)
-        self.widget = QtWidgets.QWidget(parent=self.horizontalLayoutWidget)
+        self.frame_layout.addWidget(self.img_label)
+        self.main_layout.addWidget(self.frame)
+        
+        self.widget = QtWidgets.QWidget(parent=Dialog)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.widget.setSizePolicy(sizePolicy)
+        self.widget.setMinimumSize(QtCore.QSize(400, 0))
+        self.widget.setMaximumSize(QtCore.QSize(500, 16777215))
         self.widget.setStyleSheet("background-color: qlineargradient(spread:reflect, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(37, 172, 48, 255), stop:1 rgba(141, 178, 35, 255));")
         self.widget.setObjectName("widget")
+        
+        # Create vertical layout for the right panel
+        self.widget_layout = QtWidgets.QVBoxLayout(self.widget)
+        self.widget_layout.setContentsMargins(20, 50, 20, 50)
+        self.widget_layout.setSpacing(20)
+        
+        # Add top spacer
+        spacer_top = QtWidgets.QSpacerItem(20, 100, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.widget_layout.addItem(spacer_top)
+        
         self.label = QtWidgets.QLabel(parent=self.widget)
-        self.label.setGeometry(QtCore.QRect(0, 170, 401, 71))
         self.label.setStyleSheet("color: rgb(255, 255, 255);\n"
 "font: 36pt \"Arial Rounded MT Bold\";\n"
 "background-color: transparent;")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
-        self.layoutWidget = QtWidgets.QWidget(parent=self.widget)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 390, 361, 121))
-        self.layoutWidget.setObjectName("layoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(10)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.login_btn = QtWidgets.QPushButton(parent=self.layoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.widget_layout.addWidget(self.label)
+        
+        # Add middle spacer
+        spacer_middle = QtWidgets.QSpacerItem(20, 100, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.widget_layout.addItem(spacer_middle)
+        
+        # Button layout
+        self.button_layout = QtWidgets.QVBoxLayout()
+        self.button_layout.setSpacing(10)
+        self.button_layout.setObjectName("button_layout")
+        
+        self.login_btn = QtWidgets.QPushButton(parent=self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.login_btn.sizePolicy().hasHeightForWidth())
         self.login_btn.setSizePolicy(sizePolicy)
+        self.login_btn.setMinimumHeight(50)
         self.login_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.login_btn.setStyleSheet("QPushButton {\n"
 "color: white;\n"
@@ -68,13 +95,15 @@ class Ui_Dialog(object):
 "    color: black;\n"
 "}")
         self.login_btn.setObjectName("login_btn")
-        self.verticalLayout.addWidget(self.login_btn)
-        self.signup_btn = QtWidgets.QPushButton(parent=self.layoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.button_layout.addWidget(self.login_btn)
+        
+        self.signup_btn = QtWidgets.QPushButton(parent=self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.signup_btn.sizePolicy().hasHeightForWidth())
         self.signup_btn.setSizePolicy(sizePolicy)
+        self.signup_btn.setMinimumHeight(50)
         self.signup_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.signup_btn.setStyleSheet("QPushButton {\n"
 "color: white;\n"
@@ -88,8 +117,15 @@ class Ui_Dialog(object):
 "    color: black;\n"
 "}")
         self.signup_btn.setObjectName("signup_btn")
-        self.verticalLayout.addWidget(self.signup_btn)
-        self.horizontalLayout_2.addWidget(self.widget)
+        self.button_layout.addWidget(self.signup_btn)
+        
+        self.widget_layout.addLayout(self.button_layout)
+        
+        # Add bottom spacer
+        spacer_bottom = QtWidgets.QSpacerItem(20, 100, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.widget_layout.addItem(spacer_bottom)
+        
+        self.main_layout.addWidget(self.widget)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
