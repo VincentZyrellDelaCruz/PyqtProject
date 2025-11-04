@@ -1,12 +1,11 @@
-from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout, QLabel
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
 from functools import partial
 from UI.music_player_ui import Ui_Dialog
-from eyed3.id3.frames import ImageFrame
-import sys, os, random, config, eyed3
-from controllers.music_metadata import get_music_metadata
+import sys, os, random, config
+from controllers.music_metadata import get_music_metadata, get_lyrics
 
 
 # Temporary variables
@@ -24,7 +23,6 @@ class MusicPlayer(QDialog):
         # Gets all existing music file inside local_music folder
         local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
         self.song_title = song_title
-        # self.song_title = local_playlist[0] if local_playlist else ""
 
         # Sets to continue/non-loop by default
         self.repeat = 0
@@ -49,6 +47,8 @@ class MusicPlayer(QDialog):
         self.scroll_offset = 0
         self.artist_full_text = ""
         self.scroll_timer.start(150)  # speed (ms)
+
+        self.setup_lyrics_display()
 
         self.isPlaying = True
 
@@ -76,8 +76,9 @@ class MusicPlayer(QDialog):
         self.button_group.setExclusive(True)
         self.player.setAudioOutput(self.audio_output)
 
-        self.ui.playback_tab.clicked.connect(self.switch_to_playback)
-        self.ui.list_tab.clicked.connect(self.switch_to_playlist)
+        self.ui.playback_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(0))
+        self.ui.list_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(1))
+        self.ui.lyrics_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(2))
 
         self.rotation_timer.timeout.connect(self.spin_pixmap)
         self.rotation_timer.start(30)  # ~33 FPS
@@ -111,22 +112,49 @@ class MusicPlayer(QDialog):
             print("Song file not found:", song_path)
             return
 
-        self.player.setSource(QUrl.fromLocalFile(song_path))
+        try:
+            self.player.setSource(QUrl.fromLocalFile(song_path))
+        except Exception as e:
+            print("Warning: setSource failed:", e)
+
         self.ui.song_title.setText(os.path.basename(song_path).removesuffix('.mp3'))
         self.setWindowTitle('Now playing: ' + self.song_title.replace('.mp3', ''))
 
         # Get metadata (artist + album art)
         artist, pixmap = get_music_metadata(song_path)
-        self.artist_full_text = artist
-        self.scroll_offset = 0
+        self.artist_full_text = artist  or "Unknown Artist"
         self.ui.artist_name.setText(artist)
+        self.scroll_offset = 0
 
         # Ensure CD label display remains centered and fills properly
-        if not pixmap.isNull():
-            size = self.ui.spinner.width()
-            cd_pixmap = self.cd_pixmap(pixmap, size)
-            self.fixed_pixmap = cd_pixmap
-            self.ui.spinner.setPixmap(cd_pixmap)
+        if pixmap is not None and hasattr(pixmap, "isNull") and not pixmap.isNull():
+            try:
+                size = max(1, self.ui.spinner.width())  # avoid zero
+                cd_pixmap = self.cd_pixmap(pixmap, size)
+                self.fixed_pixmap = cd_pixmap
+                self.ui.spinner.setPixmap(cd_pixmap)
+            except Exception as e:
+                print("Error handling album art pixmap:", e)
+
+        # Load lyrics
+        try:
+            self.lyrics_data = get_lyrics(song_path) or []
+        except Exception as e:
+            print("Error loading lyrics:", e)
+            self.lyrics_data = []
+
+        self.current_lyric_index = 0
+
+        # Display the lyrics if available
+        if getattr(self, "lyrics_label", None) is not None:
+            if self.lyrics_data:
+                # Show the first available lyric (timestamp 0 or first sync entry)
+                try:
+                    self.lyrics_label.setText(self.lyrics_data[0][1])
+                except Exception:
+                    self.lyrics_label.setText("No lyrics available.")
+            else:
+                self.lyrics_label.setText("No lyrics available.")
 
     # Function that changes the song
     def change_music(self, song):
@@ -201,6 +229,82 @@ class MusicPlayer(QDialog):
             label.setText(text)
             label.setIndent(0)
 
+    def setup_lyrics_display(self):
+        """Create scrollable lyrics area dynamically inside lyrics_layout."""
+
+        # Only proceed if UI layout exists
+        if not hasattr(self.ui, "lyrics_layout") or self.ui.lyrics_layout is None:
+            print("UI does not have lyrics_layout; skipping lyrics setup.")
+            return
+
+        self.lyrics_scroll = QScrollArea()
+        self.lyrics_scroll.setWidgetResizable(True)
+        self.lyrics_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.lyrics_scroll.setStyleSheet("QScrollArea { background: transparent; border: none;}")
+
+        self.lyrics_container = QWidget()
+        self.lyrics_layout_inner = QVBoxLayout(self.lyrics_container)
+        self.lyrics_layout_inner.setContentsMargins(15, 15, 15, 15)
+        self.lyrics_layout_inner.setSpacing(10)
+
+        self.lyrics_label = QLabel("No lyrics loaded.")
+        self.lyrics_label.setWordWrap(True)
+        self.lyrics_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.lyrics_label.setStyleSheet("QLabel { color: white; font-size: 16px; }")
+
+        self.lyrics_layout_inner.addWidget(self.lyrics_label)
+        self.lyrics_scroll.setWidget(self.lyrics_container)
+
+        # Add the scroll area to the existing layout in your UI
+        try:
+            self.ui.lyrics_layout.addWidget(self.lyrics_scroll)
+        except Exception as e:
+            print("Could not add lyrics_scroll to lyrics_layout:", e)
+
+    def sync_lyrics(self, position):
+        """Update displayed lyric based on current song position (position is ms)."""
+        if not getattr(self, "lyrics_data", None):
+            return
+
+        # if unsynchronized single block
+        if len(self.lyrics_data) == 1 and self.lyrics_data[0][0] == 0:
+            try:
+                self.lyrics_label.setText(self.lyrics_data[0][1])
+            except Exception:
+                pass
+            return
+
+        # find the index (linear scan is fine)
+        idx = 0
+        for i, (timestamp, text) in enumerate(self.lyrics_data):
+            try:
+                if position < int(timestamp):
+                    break
+                idx = i
+            except Exception:
+                continue
+
+        self.current_lyric_index = idx
+
+        # set lyric text
+        if 0 <= self.current_lyric_index < len(self.lyrics_data):
+            try:
+                self.lyrics_label.setText(self.lyrics_data[self.current_lyric_index][1])
+            except Exception:
+                pass
+
+        # Auto-scroll: guard against division by zero
+        try:
+            sb = self.lyrics_scroll.verticalScrollBar()
+            maximum = sb.maximum()
+            denom = max(len(self.lyrics_data), 1)
+            fraction = self.current_lyric_index / denom
+            value = int(maximum * fraction)
+            sb.setValue(value)
+        except Exception:
+            # silently ignore scroll errors (so it won't crash)
+            pass
+
     @staticmethod
     def cd_pixmap(pixmap, size, hole_ratio = 0.25):
         # Step 1: Crop the original to a 1:1 square before scaling
@@ -261,10 +365,10 @@ class MusicPlayer(QDialog):
             self.ui.spinner.setPixmap(rotated_canvas)
 
     def switch_to_playback(self):
-        self.ui.stackedWidget.setCurrentIndex(0)
+        pass
 
     def switch_to_playlist(self):
-        self.ui.stackedWidget.setCurrentIndex(1)
+        pass
 
     # Unified play/pause toggle
     def toggle_play_pause(self):
@@ -323,6 +427,10 @@ class MusicPlayer(QDialog):
             self.ui.progressTime.setValue(position)
             self.ui.currentTime.setText(self.format_time(position))
 
+            # Sync lyrics if available
+            if hasattr(self, "lyrics_data") and self.lyrics_data:
+                self.sync_lyrics(position)
+
     def update_duration(self, duration):
         self.ui.progressTime.setMaximum(duration)
         self.ui.totalTime.setText(self.format_time(duration))
@@ -359,6 +467,7 @@ class MusicPlayer(QDialog):
 
                 next_song = random.choice(local_playlist)
                 self.change_music(next_song)
+
 
 '''
 if __name__ == "__main__":

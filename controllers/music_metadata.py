@@ -1,5 +1,4 @@
-import os, config
-import eyed3
+import os, config, eyed3, re
 from PyQt6.QtGui import QPixmap
 from eyed3.id3.frames import ImageFrame
 
@@ -43,8 +42,6 @@ def get_embedded_image(song_path, square=False):
 
     return pixmap
 
-
-
 def get_music_metadata(song_path):
     """Return (artist_name, album_art_pixmap)"""
     artist = "Unknown Artist"
@@ -58,3 +55,54 @@ def get_music_metadata(song_path):
         print("Error extracting artist:", e)
 
     return artist, pixmap
+
+def get_lyrics(song_path):
+    """
+    Returns a list of (timestamp_ms, lyric_line) tuples.
+    It first checks for a .lrc file inside config.LYRICS_PATH,
+    then falls back to embedded lyrics in the mp3 file.
+    """
+    lyrics_data = []
+
+    # Get the base filename (without extension)
+    song_name = os.path.splitext(os.path.basename(song_path))[0]
+    lrc_path = os.path.join(config.LYRICS_PATH, f"{song_name}.lrc")
+
+    # --- Check .lrc file in LYRICS_PATH ---
+    if os.path.exists(lrc_path):
+        try:
+            with open(lrc_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    # Match lines like: [mm:ss.xx] lyric
+                    matches = re.findall(r"\[(\d+):(\d+(?:\.\d+)?)\](.*)", line)
+                    for match in matches:
+                        minutes = int(match[0])
+                        seconds = float(match[1])
+                        timestamp_ms = int((minutes * 60 + seconds) * 1000)
+                        lyric_text = match[2].strip()
+                        if lyric_text:
+                            lyrics_data.append((timestamp_ms, lyric_text))
+        except Exception as e:
+            print(f"[Lyrics] Error reading {lrc_path}: {e}")
+        return sorted(lyrics_data, key=lambda x: x[0])
+
+    # --- Fallback: Extract lyrics embedded in MP3 metadata ---
+    try:
+        audiofile = eyed3.load(song_path)
+        if not audiofile or not audiofile.tag:
+            return []
+
+        for lyric_tag in getattr(audiofile.tag, "lyrics", []):
+            if hasattr(lyric_tag, "sync"):  # synchronized lyrics
+                for (timestamp, text) in lyric_tag.sync:
+                    lyrics_data.append((timestamp, text.strip()))
+            else:  # unsynchronized lyrics
+                lyrics_data.append((0, lyric_tag.text.strip()))
+            break
+    except Exception as e:
+        print(f"[Lyrics] Error extracting embedded lyrics: {e}")
+
+    return lyrics_data
+
+
+

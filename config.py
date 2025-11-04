@@ -10,6 +10,7 @@ WINDOW_SIZE = (1020, 680) # Default fixed size (1000, 667)
 IMAGE_PATH = os.path.join(BASE_DIR, 'assets', 'images') + os.sep
 ICON_PATH = os.path.join(BASE_DIR, 'assets', 'icons') + os.sep
 LOCAL_MUSIC_PATH = os.path.join(BASE_DIR, 'local_music') + os.sep
+LYRICS_PATH = os.path.join(BASE_DIR, 'lyrics') + os.sep
 
 DEFAULT_VOLUME = 50 # Temporary fixed volume
 

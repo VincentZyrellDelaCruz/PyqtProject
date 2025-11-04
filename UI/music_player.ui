@@ -173,7 +173,7 @@ border-radius: 50px;</string>
       </rect>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="info">
       <widget class="QSlider" name="progressTime">
@@ -320,6 +320,38 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
        </widget>
       </widget>
      </widget>
+     <widget class="QWidget" name="lyrics_page">
+      <widget class="QFrame" name="frame_2">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>601</width>
+         <height>231</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(0, 0, 0);</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <widget class="QWidget" name="verticalLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>20</y>
+          <width>521</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="lyrics_layout"/>
+       </widget>
+      </widget>
+     </widget>
     </widget>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
@@ -330,7 +362,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
        <height>41</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="tabs" stretch="0,0">
+     <layout class="QHBoxLayout" name="tabs" stretch="0,0,0">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -361,6 +393,35 @@ QPushButton:checked {
          <bool>true</bool>
         </property>
         <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="lyrics_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(255, 255, 255);
+	border: 2px solid white;
+}
+QPushButton:checked {
+	color: rgb(255, 255, 255);
+	background-color: #1DB954;
+}</string>
+        </property>
+        <property name="text">
+         <string>Karaoke</string>
+        </property>
+        <property name="checkable">
          <bool>true</bool>
         </property>
         <property name="autoExclusive">
