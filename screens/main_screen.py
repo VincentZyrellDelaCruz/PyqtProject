@@ -3,10 +3,12 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QButtonGroup, QScrollArea, QWidget, QSizePolicy
 from PyQt6.QtGui import QIcon, QFont, QPixmap
 from UI.main_screen_ui import Ui_MainWindow
+from screens.home_screen import HomeScreen
 from screens.profile_screen import ProfileScreen
 from screens.about_screen import AboutScreen
 import config, os
 import controllers.music_metadata as metadata
+import controllers.api_client as ytapi
 
 class MainScreen(QMainWindow):
     def __init__(self, app_controller):
@@ -23,6 +25,7 @@ class MainScreen(QMainWindow):
         self.connect_signals()
         self.display_local_playlist()
 
+        self.add_home_page()
         self.add_about_page()
         self.add_profile_page()
 
@@ -67,6 +70,51 @@ class MainScreen(QMainWindow):
 
         self.ui.user1.clicked.connect(self.app_controller.goto_profile)
         self.ui.user2.clicked.connect(self.app_controller.goto_profile)
+
+    def add_home_page(self):
+        home_widget = HomeScreen(self.app_controller)
+
+        # Make it expand properly to fill available space
+        home_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        home_widget.setMinimumSize(0, 0)
+        home_widget.setMaximumSize(16777215, 16777215)
+
+        # Wrap in a scroll area just like profile page
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll_area.setWidget(home_widget)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        # Style the scrollbar (reuse same styling as profile)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background-color: #F5F5F5;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #E0E0E0;
+                width: 10px;
+                border-radius: 5px;
+                margin: 2px;
+            }
+            QScrollBar::handle:vertical {
+                background: #71C562;
+                border-radius: 5px;
+                min-height: 40px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #5fb052;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+
+        # Add to stacked widget (home_stack). Keep track of its index for navigation.
+        self.home_widget_index = self.ui.home_stack.addWidget(scroll_area)
+        print(self.home_widget_index)
 
     def add_about_page(self):
         # Create about screen widget
@@ -160,6 +208,8 @@ class MainScreen(QMainWindow):
 
         # Add to stacked widget (this is the content area beside the sidebar)
         self.ui.home_stack.addWidget(scroll_area)
+        self.profile_widget_index = self.ui.home_stack.addWidget(scroll_area)
+        print(self.profile_widget_index)
 
     def display_local_playlist(self):
         if self.local_playlist is None:

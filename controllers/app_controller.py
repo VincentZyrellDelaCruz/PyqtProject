@@ -7,7 +7,6 @@ from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
 from screens.main_screen import MainScreen
-from screens.profile_screen import ProfileScreen
 from screens.music_player import MusicPlayer
 import config, os
 
@@ -71,6 +70,7 @@ class AppController:
 
     def goto_main(self):
         self.widget.setCurrentWidget(self.main)
+        self.goto_home()
 
     def goto_local(self):
         self.main.ui.page_label.setText('LOCAL PLAY')
@@ -78,7 +78,7 @@ class AppController:
 
     def goto_home(self):
         self.main.ui.page_label.setText('HOME')
-        self.main.ui.home_stack.setCurrentIndex(0)
+        self.main.ui.home_stack.setCurrentIndex(2)
 
     def goto_about(self):
         self.main.ui.page_label.setText('ABOUT')
@@ -106,7 +106,7 @@ class AppController:
 
     def goto_profile(self):
         self.main.ui.page_label.setText('USER PROFILE')
-        self.main.ui.home_stack.setCurrentIndex(3)
+        self.main.ui.home_stack.setCurrentIndex(4)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)
