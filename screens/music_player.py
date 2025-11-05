@@ -12,9 +12,9 @@ from controllers.music_metadata import get_music_metadata, get_lyrics
 # song_title = 'Never Gonna Give You Up.mp3'
 # song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
 
-class MusicPlayer(QDialog):
-    def __init__(self, song_title):
-        super().__init__()
+class MusicPlayer(QWidget):  # Changed from QDialog to QWidget
+    def __init__(self, song_title, parent=None):
+        super().__init__(parent)
 
         # Loads the UI
         self.ui = Ui_Dialog()
@@ -56,10 +56,18 @@ class MusicPlayer(QDialog):
 
         self.play()
 
+    def cleanup(self):
+        """Cleanup method to stop playback and timers"""
+        if hasattr(self, 'player'):
+            self.player.stop()
+        if hasattr(self, 'rotation_timer'):
+            self.rotation_timer.stop()
+        if hasattr(self, 'scroll_timer'):
+            self.scroll_timer.stop()
+
     def closeEvent(self, event):
-        """Override close event to stop playback when dialog is closed"""
-        self.player.stop()
-        self.rotation_timer.stop()
+        """Override close event to stop playback when widget is closed"""
+        self.cleanup()
         event.accept()
 
     def init_ui(self):

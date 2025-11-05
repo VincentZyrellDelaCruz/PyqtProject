@@ -213,4 +213,8 @@ class LoginScreen(QWidget):  # Changed from QDialog to QWidget for stacked widge
             )
             # Clear password field
             self.password_input.clear()
-            self.password_input.setFocus()
+    
+    def clear_fields(self):
+        """Clear username and password fields - called on logout for security"""
+        self.username_input.clear()
+        self.password_input.clear()
