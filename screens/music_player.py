@@ -12,7 +12,7 @@ from controllers.music_metadata import get_music_metadata, get_lyrics
 # song_title = 'Never Gonna Give You Up.mp3'
 # song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
 
-class MusicPlayer(QWidget):  # Changed from QDialog to QWidget
+class MusicPlayer(QDialog):
     def __init__(self, song_title, parent=None):
         super().__init__(parent)
 
