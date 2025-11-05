@@ -1,106 +1,130 @@
-import token
-from idlelib import query
+from ytmusicapi import YTMusic
 
-from dotenv import load_dotenv
-from requests import post, get
-import json
-import os
-import base64
+# Initialize ytmusicapi
+ytmusic = YTMusic()
 
-load_dotenv()
+# Search Artists by name.
+def search_artists(artist_name):
+    results = ytmusic.search(artist_name, filter="artists")
+    if not results:
+        return None
 
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
+    return results # Returns a list of matching artist data (id, name, subscribers, etc.)
 
-def get_token():
-    auth_string = client_id + ':' + client_secret
-    auth_bytes = auth_string.encode('utf-8')
-    auth_base64 = str(base64.b64encode(auth_bytes), 'utf-8')
 
-    url = 'https://accounts.spotify.com/api/token'
-    headers = {
-        'Authorization': 'Basic ' + auth_base64,
-        'Content-Type': 'application/x-www-form-urlencoded'
+# Function that get artist songs.
+def get_artist_songs(artist_name, limit=10):
+    artists = search_artists(artist_name)
+    if not artists:
+        print("Artist not found.")
+        return None
+
+    artist = artists[0]
+    artist_browse_id = artist.get("browseId")
+    if not artist_browse_id:
+        print("No browseId found for artist.")
+        return None
+
+    artist_data = ytmusic.get_artist(artist_browse_id)
+    songs = artist_data.get("songs", {}).get("results", [])
+    if not songs:
+        print("No songs found for this artist.")
+        return None
+
+    return [
+        {
+            "title": song["title"],
+            "artist": song["artists"][0]["name"],
+            "album": song.get("album", {}).get("name", "Unknown"),
+            "videoId": song.get("videoId")
+        }
+        for song in songs[:limit]
+    ]
+
+
+# Function that search for songs by title
+def get_song_titles(song_title, limit=10):
+    """
+
+    """
+    results = ytmusic.search(song_title, filter="songs")
+    if not results:
+        return None
+
+    return [
+        {
+            "title": song["title"],
+            "artist": song["artists"][0]["name"],
+            "album": song.get("album", {}).get("name", "Unknown"),
+            "videoId": song.get("videoId")
+        }
+        for song in results[:limit] # Returns a list of song metadata.
+    ]
+
+
+# Function that fetch weekly top songs from YouTube Music charts. (Default country = 'US')
+def get_weekly_top_10(country="US"):
+    charts = ytmusic.get_charts(country=country)
+    top_songs = charts.get("songs", [])[:10]
+    if not top_songs:
+        print("No top songs found.")
+        return None
+
+    return [
+        {
+            "rank": idx + 1,
+            "title": song["title"],
+            "artist": song["artists"][0]["name"],
+            "videoId": song.get("videoId")
+        }
+        for idx, song in enumerate(top_songs)
+    ]
+
+
+# Get Playlist Info
+def get_playlist(playlist_id):
+    """
+    Get playlist metadata and its tracks using playlistId.
+    """
+    playlist = ytmusic.get_playlist(playlist_id, limit=20)
+    if not playlist:
+        return None
+
+    tracks = [
+        {
+            "title": track["title"],
+            "artist": track["artists"][0]["name"],
+            "videoId": track.get("videoId")
+        }
+        for track in playlist["tracks"]
+    ]
+
+    return {
+        "title": playlist.get("title"),
+        "description": playlist.get("description"),
+        "tracks": tracks
     }
-    payload = { 'grant_type': 'client_credentials' }
-    result = post(url, headers=headers, data=payload)
-    json_data = json.loads(result.content)
-    token = json_data['access_token']
-    return token
 
-def get_auth_headers(token):
-    headers = {
-        'Authorization': 'Bearer ' + token,
-    }
-    return headers
 
-def search_albums(token, album_id):
-    url = 'https://api.spotify.com/v1/albums/search'
+# Example Test Run ===
 
-# Search the artist's name
-def search_artists(token, artist_name):
-    url = 'https://api.spotify.com/v1/search'
-    headers = get_auth_headers(token)
+print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
 
-    query = f'?q={artist_name}&type=artist&limit=1'
-    query_url = url + query
+if __name__ == "__main__":
+    print("=== YouTube Music Weekly Top 10 ===")
+    top_10 = get_weekly_top_10()
+    if top_10:
+        for song in top_10:
+            print(f"{song['rank']}. {song['title']} - {song['artist']} (videoId={song['videoId']})")
 
-    response = get(query_url, headers=headers)
-    json_data = json.loads(response.content)['artists']['items']
+    print("\n=== Search Artist Example ===")
+    artist_songs = get_artist_songs("Taylor Swift")
+    if artist_songs:
+        for idx, s in enumerate(artist_songs, start=1):
+            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']})")
 
-    if len(json_data) == 0: return None
-
-    # print(json.dumps(json_data, indent=4))
-
-    return json_data
-
-# Get the artist songs by its top tracks
-def get_artist_songs(token, artist_id):
-    url = f'https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=US'
-    headers = get_auth_headers(token)
-
-    response = get(url, headers=headers)
-    json_data = json.loads(response.content)['tracks']
-
-    if len(json_data) == 0: return None
-
-    # print(json.dumps(json_data, indent=4))
-
-    return json_data
-
-# Get the song title and the artist
-def get_song_titles(token, song_title):
-    url = 'https://api.spotify.com/v1/search'
-    headers = get_auth_headers(token)
-
-    query = f'?q=track:{song_title}&type=track'
-    query_url = url + query
-
-    response = get(query_url, headers=headers)
-    json_data = json.loads(response.content)['tracks']['items']
-
-    if len(json_data) == 0: return None
-
-    # print(json.dumps(json_data, indent=4))
-
-    return [f"{item['name']} -> {item['artists'][0]['name']}" for item in json_data]
-
-user_token = get_token()
-'''
-
-artist = search_artists(user_token, 'Rick Astley')
-artist_id = artist[0]['id']
-songs = get_artist_songs(user_token, artist_id)
-
-for idx, song in enumerate(songs):
-    song_name = song['name']
-    song_url = song['external_urls']['spotify']
-
-    print(f'{idx + 1}. {song_name}: {song_url}')
-
-'''
-song_titles = get_song_titles(user_token, 'Bohemian Rhapsody')
-
-print()
-for song in song_titles:
-    print(song)
+    print("\n=== Search Song Example ===")
+    song_results = get_song_titles("Blinding Lights")
+    if song_results:
+        for idx, s in enumerate(song_results, start=1):
+            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']})")
