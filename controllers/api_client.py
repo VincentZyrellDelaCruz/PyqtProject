@@ -85,8 +85,9 @@ def get_song_titles(token, song_title):
 
     return [f"{item['name']} -> {item['artists'][0]['name']}" for item in json_data]
 
-'''
 user_token = get_token()
+'''
+
 artist = search_artists(user_token, 'Rick Astley')
 artist_id = artist[0]['id']
 songs = get_artist_songs(user_token, artist_id)
@@ -97,10 +98,9 @@ for idx, song in enumerate(songs):
 
     print(f'{idx + 1}. {song_name}: {song_url}')
 
-
+'''
 song_titles = get_song_titles(user_token, 'Bohemian Rhapsody')
 
 print()
 for song in song_titles:
     print(song)
-'''
