@@ -59,21 +59,65 @@ def get_music_metadata(song_path):
 def get_lyrics(song_path):
     """
     Returns a list of (timestamp_ms, lyric_line) tuples.
-    It first checks for a .lrc file inside config.LYRICS_PATH,
-    then falls back to embedded lyrics in the mp3 file.
+
+    Priority:
+    1. Embedded USLT (standard lyrics frame)
+    2. Custom fields (description, synopsis, comment)
+    3. .lrc file in config.LYRICS_PATH
     """
     lyrics_data = []
 
-    # Get the base filename (without extension)
-    song_name = os.path.splitext(os.path.basename(song_path))[0]
-    lrc_path = os.path.join(config.LYRICS_PATH, f"{song_name}.lrc")
+    try:
+        audiofile = eyed3.load(song_path)
+        tag = getattr(audiofile, "tag", None)
 
-    # --- Check .lrc file in LYRICS_PATH ---
-    if os.path.exists(lrc_path):
-        try:
+        # --- Step 1: Try standard embedded lyrics (USLT) ---
+        if tag and getattr(tag, "lyrics", None):
+            for lyric_tag in tag.lyrics:
+                if hasattr(lyric_tag, "sync") and lyric_tag.sync:
+                    for (timestamp, text) in lyric_tag.sync:
+                        lyrics_data.append((timestamp, text.strip()))
+                elif lyric_tag.text:
+                    lyrics_data.append((0, lyric_tag.text.strip()))
+            if lyrics_data:
+                return sorted(lyrics_data, key=lambda x: x[0])
+
+        # --- Step 2: Try to find lyrics inside custom metadata text fields ---
+        possible_fields = [
+            getattr(tag, "comment", None),
+            getattr(tag, "description", None),
+            getattr(tag, "synopsis", None),
+        ]
+        text_blocks = []
+
+        for field in possible_fields:
+            if isinstance(field, str) and len(field.strip()) > 30:  # heuristic: long enough to be lyrics
+                text_blocks.append(field)
+            elif hasattr(field, "text") and field.text and len(field.text.strip()) > 30:
+                text_blocks.append(field.text)
+
+        # Combine and extract possible lyric lines
+        if text_blocks:
+            combined_text = "\n".join(text_blocks)
+            # Try to cut out only the part after 'LYRICS:' if exists
+            if "LYRICS:" in combined_text.upper():
+                combined_text = combined_text.split("LYRICS:", 1)[1]
+            lines = [line.strip() for line in combined_text.splitlines() if line.strip()]
+            lyrics_data = [(i * 5000, line) for i, line in enumerate(lines)]  # fake timestamps for scrolling
+            if lyrics_data:
+                return lyrics_data
+
+    except Exception as e:
+        print(f"[Lyrics] Error extracting embedded/custom lyrics: {e}")
+
+    # --- Step 3: Fallback to external .lrc file ---
+    try:
+        song_name = os.path.splitext(os.path.basename(song_path))[0]
+        lrc_path = os.path.join(config.LYRICS_PATH, f"{song_name}.lrc")
+
+        if os.path.exists(lrc_path):
             with open(lrc_path, "r", encoding="utf-8") as f:
                 for line in f:
-                    # Match lines like: [mm:ss.xx] lyric
                     matches = re.findall(r"\[(\d+):(\d+(?:\.\d+)?)\](.*)", line)
                     for match in matches:
                         minutes = int(match[0])
@@ -82,27 +126,12 @@ def get_lyrics(song_path):
                         lyric_text = match[2].strip()
                         if lyric_text:
                             lyrics_data.append((timestamp_ms, lyric_text))
-        except Exception as e:
-            print(f"[Lyrics] Error reading {lrc_path}: {e}")
-        return sorted(lyrics_data, key=lambda x: x[0])
-
-    # --- Fallback: Extract lyrics embedded in MP3 metadata ---
-    try:
-        audiofile = eyed3.load(song_path)
-        if not audiofile or not audiofile.tag:
-            return []
-
-        for lyric_tag in getattr(audiofile.tag, "lyrics", []):
-            if hasattr(lyric_tag, "sync"):  # synchronized lyrics
-                for (timestamp, text) in lyric_tag.sync:
-                    lyrics_data.append((timestamp, text.strip()))
-            else:  # unsynchronized lyrics
-                lyrics_data.append((0, lyric_tag.text.strip()))
-            break
     except Exception as e:
-        print(f"[Lyrics] Error extracting embedded lyrics: {e}")
+        print(f"[Lyrics] Error reading external .lrc file: {e}")
 
-    return lyrics_data
+    return sorted(lyrics_data, key=lambda x: x[0])
+
+
 
 
 
