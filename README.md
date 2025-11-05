@@ -1,5 +1,8 @@
 # README
 
+## IMPORTANT NOTE!
+If there's some error when requesting an api call to ytmusicapi, rerun the program just in case.
+
 ## REQUIRED INSTALL:
 
 `pip install PyQt6`
