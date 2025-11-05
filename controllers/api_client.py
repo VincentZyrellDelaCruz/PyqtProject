@@ -36,7 +36,8 @@ def get_artist_songs(artist_name, limit=10):
             "title": song["title"],
             "artist": song["artists"][0]["name"],
             "album": song.get("album", {}).get("name", "Unknown"),
-            "videoId": song.get("videoId")
+            "videoId": song.get("videoId"),
+            "thumbnails": song.get("thumbnails", [{}])[-1].get("url")
         }
         for song in songs[:limit]
     ]
@@ -56,30 +57,68 @@ def get_song_titles(song_title, limit=10):
             "title": song["title"],
             "artist": song["artists"][0]["name"],
             "album": song.get("album", {}).get("name", "Unknown"),
-            "videoId": song.get("videoId")
+            "videoId": song.get("videoId"),
+            "thumbnails": song.get("thumbnails", [{}])[-1].get("url")
         }
         for song in results[:limit] # Returns a list of song metadata.
     ]
 
 
-# Function that fetch weekly top songs from YouTube Music charts. (Default country = 'US')
+# Function that fetch weekly top songs from YouTube Music charts. (Currently doesn't work)
 def get_weekly_top_10(country="US"):
-    charts = ytmusic.get_charts(country=country)
-    top_songs = charts.get("songs", [])[:10]
-    if not top_songs:
-        print("No top songs found.")
+    try:
+        charts = ytmusic.get_charts(country=country)
+        top_songs = charts.get("songs")
+        if not top_songs:
+            print(f"No top songs found.")
+            return None
+
+        top_10 = []
+        for idx, song in enumerate(top_songs[:10]):
+            title = song.get("title")
+            artists = song.get("artists", [])
+            artist_name = artists[0]["name"] if artists else "Unknown Artist"
+            video_id = song.get("videoId")
+
+            top_10.append({
+                "rank": idx + 1,
+                "title": title,
+                "artist": artist_name
+            })
+
+        return top_10
+
+    except Exception as e:
+        print(f"Error fetching charts: {e}")
         return None
 
-    return [
-        {
-            "rank": idx + 1,
-            "title": song["title"],
-            "artist": song["artists"][0]["name"],
-            "videoId": song.get("videoId")
-        }
-        for idx, song in enumerate(top_songs)
-    ]
 
+# Function that fetches top artists from YouTube Music charts
+def get_top_artists(country="US", limit=10):
+    try:
+        charts = ytmusic.get_charts(country=country)
+        top_artists = charts.get("artists")
+        if not top_artists:
+            print(f"No top artists found for country '{country}'.")
+            return None
+
+        return [
+            {
+                "rank": idx + 1,
+                "name": artist.get("title", "Unknown Artist"),  # fallback to 'title' instead of 'name'
+                "videoId": artist.get("videoId"),
+                "thumbnails": artist.get("thumbnails", [{}])[-1].get("url")
+            }
+            for idx, artist in enumerate(top_artists[:limit])
+        ]
+
+    except Exception as e:
+        print(f"Error fetching top artists: {e}")
+        return None
+
+    except Exception as e:
+        print(f"Error fetching top artists: {e}")
+        return None
 
 # Get Playlist Info
 def get_playlist(playlist_id):
@@ -105,26 +144,67 @@ def get_playlist(playlist_id):
         "tracks": tracks
     }
 
+# Function that fetches 10 recommended songs from YouTube Music
+def get_recommended_songs(limit=10):
+    try:
+        home = ytmusic.get_home()
+        for section in home:
+            contents = section.get("contents", [])
+            # Filter for song-type items with videoId and title
+            song_items = [
+                item for item in contents
+                if item.get("videoId") and item.get("title") and "artists" in item
+            ]
+            if song_items:
+                return [
+                    {
+                        "title": item["title"],
+                        "artist": item["artists"][0].get("name", "Unknown Artist"),
+                        "album": item.get("album", {}).get("name", "Unknown Album"),
+                        "videoId": item["videoId"],
+                        "thumbnails": item.get("thumbnails", [{}])[-1].get("url")
+                    }
+                    for item in song_items[:limit]
+                ]
+
+        print("No recommended songs found in home sections.")
+        return None
+
+    except Exception as e:
+        print(f"Error fetching recommended songs: {e}")
+        return None
 
 # Example Test Run ===
 
 print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
 
 if __name__ == "__main__":
+    print("\n=== Recommended Songs ===")
+    recommended = get_recommended_songs()
+    if recommended:
+        for idx, song in enumerate(recommended, start=1):
+            print(f"{idx}. {song['title']} - {song['artist']} ({song['album']}) {song['thumbnails']}")
+
     print("=== YouTube Music Weekly Top 10 ===")
     top_10 = get_weekly_top_10()
     if top_10:
         for song in top_10:
             print(f"{song['rank']}. {song['title']} - {song['artist']} (videoId={song['videoId']})")
 
+    print("\n=== YouTube Music Top Artists ===")
+    top_artists = get_top_artists()
+    if top_artists:
+        for artist in top_artists:
+            print(f"{artist['rank']}. {artist['name']} {artist['thumbnails']}")
+
     print("\n=== Search Artist Example ===")
     artist_songs = get_artist_songs("Taylor Swift")
     if artist_songs:
         for idx, s in enumerate(artist_songs, start=1):
-            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']})")
+            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
 
     print("\n=== Search Song Example ===")
     song_results = get_song_titles("Blinding Lights")
     if song_results:
         for idx, s in enumerate(song_results, start=1):
-            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']})")
+            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
