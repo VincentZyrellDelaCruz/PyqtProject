@@ -43,6 +43,12 @@ class MainScreen(QMainWindow):
         self.ui.home1.setChecked(True)
         self.ui.home2.setChecked(True)
 
+        self.ui.genre1.setIcon(QIcon(config.ICON_PATH + 'genre.svg'))
+        self.ui.genre2.setIcon(QIcon(config.ICON_PATH + 'genre.svg'))
+
+        self.ui.search1.setIcon(QIcon(config.ICON_PATH + 'search.svg'))
+        self.ui.search2.setIcon(QIcon(config.ICON_PATH + 'search.svg'))
+
         self.ui.local1.setIcon(QIcon(config.ICON_PATH + 'local-play-button.png'))
         self.ui.local2.setIcon(QIcon(config.ICON_PATH + 'local-play-button.png'))
 

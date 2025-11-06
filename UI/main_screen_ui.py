@@ -81,6 +81,48 @@ class Ui_MainWindow(object):
         self.home1.setAutoExclusive(True)
         self.home1.setObjectName("home1")
         self.verticalLayout.addWidget(self.home1)
+        self.genre1 = QtWidgets.QPushButton(parent=self.widget_icons)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.genre1.sizePolicy().hasHeightForWidth())
+        self.genre1.setSizePolicy(sizePolicy)
+        self.genre1.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.genre1.setStyleSheet("QPushButton:checked {\n"
+                                 "    background-color: white;\n"
+                                 "    color: #71C562;\n"
+                                 "    border-radius: 10px;\n"
+                                 "}")
+        self.genre1.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/musical-note.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.genre1.setIcon(icon)
+        self.genre1.setIconSize(QtCore.QSize(30, 30))
+        self.genre1.setCheckable(True)
+        self.genre1.setAutoExclusive(True)
+        self.genre1.setObjectName("genre1")
+        self.verticalLayout.addWidget(self.genre1)
+        self.search1 = QtWidgets.QPushButton(parent=self.widget_icons)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.search1.sizePolicy().hasHeightForWidth())
+        self.search1.setSizePolicy(sizePolicy)
+        self.search1.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.search1.setStyleSheet("QPushButton:checked {\n"
+                                 "    background-color: white;\n"
+                                 "    color: #71C562;\n"
+                                 "    border-radius: 10px;\n"
+                                 "}")
+        self.search1.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/musical-note.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.search1.setIcon(icon)
+        self.search1.setIconSize(QtCore.QSize(30, 30))
+        self.search1.setCheckable(True)
+        self.search1.setAutoExclusive(True)
+        self.search1.setObjectName("search1")
+        self.verticalLayout.addWidget(self.search1)
         self.local1 = QtWidgets.QPushButton(parent=self.widget_icons)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -205,6 +247,54 @@ class Ui_MainWindow(object):
         self.home2.setAutoExclusive(True)
         self.home2.setObjectName("home2")
         self.verticalLayout_2.addWidget(self.home2)
+        self.genre2 = QtWidgets.QPushButton(parent=self.widget_icontexts)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.genre2.sizePolicy().hasHeightForWidth())
+        self.genre2.setSizePolicy(sizePolicy)
+        self.genre2.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.genre2.setStyleSheet("QPushButton {\n"
+"    height: 30px;\n"
+"    border: none;\n"
+"    font-size: 18px;\n"
+"    padding-left: -30px\n"
+"}\n"
+"QPushButton:checked {\n"
+"    background-color: white;\n"
+"    color: #71C562;\n"
+"    border-radius: 10px;\n"
+"}")
+        self.genre2.setIcon(icon)
+        self.genre2.setIconSize(QtCore.QSize(30, 30))
+        self.genre2.setCheckable(True)
+        self.genre2.setAutoExclusive(True)
+        self.genre2.setObjectName("genre2")
+        self.verticalLayout_2.addWidget(self.genre2)
+        self.search2 = QtWidgets.QPushButton(parent=self.widget_icontexts)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.search2.sizePolicy().hasHeightForWidth())
+        self.search2.setSizePolicy(sizePolicy)
+        self.search2.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.search2.setStyleSheet("QPushButton {\n"
+"    height: 30px;\n"
+"    border: none;\n"
+"    font-size: 18px;\n"
+"    padding-left: -30px\n"
+"}\n"
+"QPushButton:checked {\n"
+"    background-color: white;\n"
+"    color: #71C562;\n"
+"    border-radius: 10px;\n"
+"}")
+        self.search2.setIcon(icon)
+        self.search2.setIconSize(QtCore.QSize(30, 30))
+        self.search2.setCheckable(True)
+        self.search2.setAutoExclusive(True)
+        self.search2.setObjectName("search2")
+        self.verticalLayout_2.addWidget(self.search2)
         self.local2 = QtWidgets.QPushButton(parent=self.widget_icontexts)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -399,6 +489,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.home_stack.setCurrentIndex(0)
         self.home2.toggled['bool'].connect(self.home1.setChecked) # type: ignore
+        self.genre2.toggled['bool'].connect(self.genre1.setChecked)  # type: ignore
+        self.search2.toggled['bool'].connect(self.search1.setChecked)  # type: ignore
         self.local2.toggled['bool'].connect(self.local1.setChecked) # type: ignore
         self.about2.toggled['bool'].connect(self.about1.setChecked) # type: ignore
         self.user2.toggled['bool'].connect(self.user1.setChecked) # type: ignore
@@ -410,6 +502,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.home2.setText(_translate("MainWindow", "  Home"))
+        self.genre2.setText(_translate("MainWindow", "  Genre"))
+        self.search2.setText(_translate("MainWindow", "  Search"))
         self.local2.setText(_translate("MainWindow", " Local Play"))
         self.about2.setText(_translate("MainWindow", " About"))
         self.user2.setText(_translate("MainWindow", " User"))
