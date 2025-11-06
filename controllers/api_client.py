@@ -68,22 +68,45 @@ def get_song_titles(song_title, limit=10):
 def get_weekly_top_10(country="US"):
     try:
         charts = ytmusic.get_charts(country=country)
-        top_songs = charts.get("songs")
-        if not top_songs:
-            print(f"No top songs found.")
+
+        # Find the "Top 100 Music Videos" playlist (most consistent source of top songs)
+        top_playlist = None
+        for item in charts.get("videos", []):
+            if "Top" in item["title"] and "Music" in item["title"]:
+                top_playlist = item
+                break
+
+        if not top_playlist:
+            print(f"No top music playlist found for {country}.")
+            return None
+
+        playlist_id = top_playlist["playlistId"]
+
+        # Fetch actual songs from the playlist
+        playlist = ytmusic.get_playlist(playlist_id, limit=10)
+        if not playlist or "tracks" not in playlist:
+            print("No tracks found in playlist.")
             return None
 
         top_10 = []
-        for idx, song in enumerate(top_songs[:10]):
-            title = song.get("title")
-            artists = song.get("artists", [])
-            artist_name = artists[0]["name"] if artists else "Unknown Artist"
-            video_id = song.get("videoId")
+        for idx, track in enumerate(playlist["tracks"][:10]):
+            title = track.get("title", "Unknown Title")
+            artist_name = (
+                track["artists"][0]["name"] if track.get("artists") else "Unknown Artist"
+            )
+            video_id = track.get("videoId")
+            thumbnail = (
+                track["thumbnails"][-1]["url"]
+                if track.get("thumbnails")
+                else None
+            )
 
             top_10.append({
                 "rank": idx + 1,
                 "title": title,
-                "artist": artist_name
+                "artist": artist_name,
+                "video_id": video_id,
+                "thumbnail": thumbnail
             })
 
         return top_10
@@ -94,7 +117,7 @@ def get_weekly_top_10(country="US"):
 
 
 # Function that fetches top artists from YouTube Music charts
-def get_top_artists(country="US", limit=10):
+def get_top_artists(country="US", limit=5):
     try:
         charts = ytmusic.get_charts(country=country)
         top_artists = charts.get("artists")
@@ -116,15 +139,70 @@ def get_top_artists(country="US", limit=10):
         print(f"Error fetching top artists: {e}")
         return None
 
+# Function that fetches new albums and singles from YouTube Music Explore page
+def get_new_albums_and_singles(limit=5):
+    """
+    Fetch new albums and singles from YouTube Music's Explore page.
+    Returns a list of dicts with title, artist, browseId, and thumbnail.
+    """
+    try:
+        explore_data = ytmusic.get_explore()  # returns a dict
+        sections = explore_data.get("sections", [])
+
+        # Look for a section with 'New releases' or similar variants
+        new_releases_section = next(
+            (section for section in sections if section.get("title", "").lower() in ["new releases", "new release"]),
+            None
+        )
+
+        if not new_releases_section:
+            print("No 'New releases' section found in explore data.")
+            return []
+
+        items = new_releases_section.get("items", [])
+        if not items:
+            print("No albums or singles found in 'New releases' section.")
+            return []
+
+        albums = []
+        for item in items[:limit]:
+            # Extract title
+            title = item.get("title", "Unknown Title")
+
+            # Artist info can appear in different formats
+            subtitle = item.get("subtitle")
+            artist = "Unknown Artist"
+
+            if isinstance(subtitle, list) and subtitle:
+                # Some entries have [{'name': 'Artist Name', 'browseId': '...'}]
+                artist = subtitle[0].get("name", "Unknown Artist")
+            elif isinstance(subtitle, str):
+                artist = subtitle
+            elif "artists" in item:
+                artist = ", ".join(a.get("name", "") for a in item["artists"])
+
+            # Thumbnail handling
+            thumbnails = item.get("thumbnails", [])
+            thumbnail_url = ""
+            if thumbnails and isinstance(thumbnails, list):
+                thumbnail_url = thumbnails[-1].get("url", "")
+
+            albums.append({
+                "title": title,
+                "artist": artist,
+                "browseId": item.get("browseId"),
+                "thumbnails": thumbnail_url
+            })
+
+        return albums
+
     except Exception as e:
-        print(f"Error fetching top artists: {e}")
-        return None
+        print(f"Error fetching new albums and singles: {e}")
+        return []
 
 # Get Playlist Info
 def get_playlist(playlist_id):
-    """
-    Get playlist metadata and its tracks using playlistId.
-    """
+    # Get playlist metadata and its tracks using playlistId.
     playlist = ytmusic.get_playlist(playlist_id, limit=20)
     if not playlist:
         return None
@@ -175,10 +253,9 @@ def get_recommended_songs(limit=10):
         return None
 
 # Example Test Run ===
-
-print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
-
 if __name__ == "__main__":
+    print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
+
     print("\n=== Recommended Songs ===")
     recommended = get_recommended_songs()
     if recommended:
@@ -189,7 +266,7 @@ if __name__ == "__main__":
     top_10 = get_weekly_top_10()
     if top_10:
         for song in top_10:
-            print(f"{song['rank']}. {song['title']} - {song['artist']} (videoId={song['videoId']})")
+            print(f"{song['rank']}. {song['title']} - {song['artist']} (videoId={song['video_id']}) ({song['thumbnail']})")
 
     print("\n=== YouTube Music Top Artists ===")
     top_artists = get_top_artists()
@@ -208,3 +285,5 @@ if __name__ == "__main__":
     if song_results:
         for idx, s in enumerate(song_results, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
+
+    # print("US Charts:", ytmusic.get_charts(country="US"))
