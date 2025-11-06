@@ -222,8 +222,8 @@ def get_playlist(playlist_id):
         "tracks": tracks
     }
 
-# Function that fetches 10 recommended songs from YouTube Music
-def get_recommended_songs(limit=10):
+# Function that fetches 5 recommended songs from YouTube Music
+def get_recommended_songs(limit=5):
     try:
         home = ytmusic.get_home()
         for section in home:
@@ -255,7 +255,7 @@ def get_recommended_songs(limit=10):
 # Example Test Run ===
 if __name__ == "__main__":
     print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
-
+    '''
     print("\n=== Recommended Songs ===")
     recommended = get_recommended_songs()
     if recommended:
@@ -286,4 +286,6 @@ if __name__ == "__main__":
         for idx, s in enumerate(song_results, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
 
-    # print("US Charts:", ytmusic.get_charts(country="US"))
+    print("US Charts:", ytmusic.get_charts(country="US"))
+    '''
+

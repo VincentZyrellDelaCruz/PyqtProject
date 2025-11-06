@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayo
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 import controllers.api_client as ytapi
-import os, sys, config, requests
+import os, config, requests
 
 
 class HomeScreen(QWidget):
@@ -20,13 +20,30 @@ class HomeScreen(QWidget):
         main_layout.setContentsMargins(24, 24, 24, 24)
         main_layout.setSpacing(24)
 
-        # Recommended songs section
+        # --- Top Songs Section ---
         top_songs_section = self.create_top_songs_section()
-        top_artist_section = self.create_top_artist_section()
-
         main_layout.addWidget(top_songs_section)
-        main_layout.addWidget(top_artist_section)
 
+        # --- Two-column layout for Artists + Recommendations ---
+        two_column_frame = QFrame()
+        two_column_frame.setStyleSheet("background: transparent;")
+        two_column_layout = QHBoxLayout(two_column_frame)
+        two_column_layout.setContentsMargins(0, 0, 0, 0)
+        two_column_layout.setSpacing(24)
+
+        # Create both sections
+        top_artist_section = self.create_top_artist_section()
+        recommendation_section = self.create_recommendation_section()
+
+        # Ensure both sections expand evenly
+        top_artist_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        recommendation_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+        # Add to horizontal layout
+        two_column_layout.addWidget(top_artist_section)
+        two_column_layout.addWidget(recommendation_section)
+
+        main_layout.addWidget(two_column_frame)
         main_layout.addStretch()
 
     def create_top_songs_section(self):
@@ -48,57 +65,147 @@ class HomeScreen(QWidget):
         header_label.setStyleSheet("color: white;")
         card_layout.addWidget(header_label)
 
-        # Scrollable song cards container
+        # --- Scroll Area ---
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setFixedHeight(230)
         scroll_area.setStyleSheet("""
             QScrollArea {
                 background: transparent;
                 border: none;
             }
+
             QScrollBar:horizontal {
                 background: #1E1E1E;
-                height: 6px;
+                height: 8px;
+                margin: 0px;  /* ✅ removes white margin at edges */
+                border-radius: 4px;
             }
+
             QScrollBar::handle:horizontal {
                 background: #444;
-                border-radius: 3px;
+                border-radius: 4px;
+                min-width: 20px;
+            }
+
+            /* ✅ Hide arrow buttons completely */
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal {
+                background: none;
+                width: 0px;
+                height: 0px;
+            }
+
+            /* ✅ Hide any leftover gaps on edges */
+            QScrollBar::add-page:horizontal,
+            QScrollBar::sub-page:horizontal {
+                background: #1E1E1E;
             }
         """)
 
-        # Inner widget of the scroll area
+        # Inner widget for scroll area
         scroll_widget = QWidget()
-        scroll_widget.setStyleSheet("""
-            QWidget {
-                background-color: transparent;
-            }
-        """)
+        scroll_widget.setStyleSheet("background-color: transparent;")
 
         scroll_layout = QHBoxLayout(scroll_widget)
-        scroll_layout.setContentsMargins(0, 2, 0, 8)
+        scroll_layout.setContentsMargins(0, 0, 10, 10)
         scroll_layout.setSpacing(20)
 
         # Load top 10 songs
-        songs = ytapi.get_weekly_top_10()
+        songs = ytapi.get_weekly_top_10() or []
 
         for song in songs:
             song_card = self.create_song_card(song)
             scroll_layout.addWidget(song_card)
 
+        scroll_layout.addStretch()
         scroll_widget.setLayout(scroll_layout)
         scroll_area.setWidget(scroll_widget)
         card_layout.addWidget(scroll_area)
 
+        # Allows expansion so the frame height fits the scroll content nicely
+        card_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         return card_frame
 
     def create_recommendation_section(self):
-        pass
+        # Outer container
+        recommendation_frame = QFrame()
+        recommendation_frame.setStyleSheet("""
+                    QFrame {
+                        background-color: #1E1E1E;
+                        border-radius: 12px;
+                    }
+                """)
+
+        card_layout = QVBoxLayout(recommendation_frame)
+        card_layout.setContentsMargins(18, 14, 18, 14)
+        card_layout.setSpacing(10)
+
+        # Header
+        header_label = QLabel("Songs around the world")
+        header_label.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        header_label.setStyleSheet("color: white;")
+        card_layout.addWidget(header_label)
+
+        # Content widget inside scroll area
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: transparent;")
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 2, 0, 8)
+        content_layout.setSpacing(10)
+
+        # Load top artists from API client
+        songs = ytapi.get_recommended_songs()
+
+        for song in songs:
+            song_title = song.get('title', 'Unknown Artist')
+            song_icon = song.get('thumbnails', '')  # match your dict key
+
+            song_btn = QPushButton((' ' * 3) + song_title)
+            song_btn.setFont(QFont('Segoe UI', 14))
+
+            # Get thumbnail bytes
+            thumbnail_data = self.get_thumbnail(song_icon)
+
+            # Load the image from the bytes into QPixmap
+            pixmap = QPixmap()
+            if pixmap.loadFromData(thumbnail_data):
+                song_btn.setIcon(QIcon(pixmap))
+            else:
+                # If loading the image fails, set a default (placeholder) icon
+                pixmap.loadFromData(self.get_thumbnail(''))  # Use the default image for failed loads
+                song_btn.setIcon(QIcon(pixmap))
+
+            song_btn.setIconSize(QSize(40, 40))
+            song_btn.setStyleSheet('''
+                        QPushButton { 
+                            color: #fff;
+                            text-align: left;
+                            background-color: transparent; 
+                            padding: 8px 10px;
+                            border: none;
+                            border-radius: 6px; 
+                        }
+                        QPushButton:hover {
+                            background-color: #3a3a3a;
+                        }
+                        QPushButton:checked {
+                            background-color: #1DB954;
+                        }
+                        QIcon {
+                            border-radius: 5px;
+                        }
+                    ''')
+            content_layout.addWidget(song_btn)
+
+        content_widget.setLayout(content_layout)
+        card_layout.addWidget(content_widget)
+
+        return recommendation_frame
 
     def create_top_artist_section(self):
-        from controllers import api_client  # make sure api_client is imported
-
         # Outer container
         top_artist_frame = QFrame()
         top_artist_frame.setStyleSheet("""
@@ -126,7 +233,7 @@ class HomeScreen(QWidget):
         content_layout.setSpacing(10)
 
         # Load top artists from API client
-        artists = api_client.get_top_artists()
+        artists = ytapi.get_top_artists()
 
         for artist in artists:
             artist_name = artist.get('name', 'Unknown Artist')
