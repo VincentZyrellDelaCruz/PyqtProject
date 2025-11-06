@@ -13,8 +13,8 @@ import config, os
 class AppController:
     def __init__(self):
         self.widget = QStackedWidget()
-
         self.widget.setWindowTitle('μsic sync')
+
         icon_path = os.path.join(config.IMAGE_PATH, "μsic_sync-removebg.png")
         self.widget.setWindowIcon(QIcon(icon_path))
 
@@ -32,8 +32,7 @@ class AppController:
         self.startup = StartupScreen(self)
         self.welcome = WelcomeScreen(self)
         self.login = LoginScreen(self)
-        # Removed signup screen - no registration needed
-        self.main = MainScreen(self)
+        self.main = None # will be initialized after login
 
         self.add_widget_stack()
 
@@ -49,8 +48,6 @@ class AppController:
         self.widget.addWidget(self.startup)
         self.widget.addWidget(self.welcome)
         self.widget.addWidget(self.login)
-        # Removed signup widget - no registration needed
-        self.widget.addWidget(self.main)
 
     def center_widget(self):
         screen = QGuiApplication.primaryScreen()
@@ -69,18 +66,27 @@ class AppController:
         self.widget.setCurrentWidget(self.welcome)
 
     def goto_main(self):
+        # Load MainScreen dynamically after successful login.
+        if self.main is None:
+            self.main = MainScreen(self)
+            self.widget.addWidget(self.main)
+
         self.widget.setCurrentWidget(self.main)
         self.goto_home()
 
     def goto_local(self):
-        self.main.ui.page_label.setText('LOCAL PLAY')
-        self.main.ui.home_stack.setCurrentIndex(1)
+        if self.main and hasattr(self.main, "ui"):
+            self.main.ui.page_label.setText('LOCAL PLAY')
+            self.main.ui.home_stack.setCurrentIndex(1)
 
     def goto_home(self):
-        self.main.ui.page_label.setText('HOME')
-        self.main.ui.home_stack.setCurrentIndex(2)
+        if self.main and hasattr(self.main, "ui"):
+            self.main.ui.page_label.setText('HOME')
+            self.main.ui.home_stack.setCurrentIndex(2)
 
     def goto_about(self):
+        if not self.main:
+            return
         self.main.ui.page_label.setText('ABOUT')
 
         # If the UI actually has an about_page stacked widget, prefer it
@@ -101,12 +107,13 @@ class AppController:
             except Exception:
                 pass
 
-        # Final fallback: go to home index 0 to avoid crash
-        self.main.ui.home_stack.setCurrentIndex(0)
+        # Fallback to avoid crash
+        self.main.ui.home_stack.setCurrentIndex(2)
 
     def goto_profile(self):
-        self.main.ui.page_label.setText('USER PROFILE')
-        self.main.ui.home_stack.setCurrentIndex(4)
+        if self.main and hasattr(self.main, "ui"):
+            self.main.ui.page_label.setText('USER PROFILE')
+            self.main.ui.home_stack.setCurrentIndex(4)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)

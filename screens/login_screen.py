@@ -203,6 +203,7 @@ class LoginScreen(QWidget):  # Changed from QDialog to QWidget for stacked widge
         if self.auth_controller.authenticate(username, password):
             # Login successful
             self.app_controller.goto_main()
+            self.clear_fields()
         else:
             # Login failed - show error message
             QMessageBox.warning(
