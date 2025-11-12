@@ -45,9 +45,6 @@ def get_artist_songs(artist_name, limit=10):
 
 # Function that search for songs by title
 def get_song_titles(song_title, limit=10):
-    """
-
-    """
     results = ytmusic.search(song_title, filter="songs")
     if not results:
         return None
@@ -252,9 +249,42 @@ def get_recommended_songs(limit=5):
         print(f"Error fetching recommended songs: {e}")
         return None
 
+# Function for fetching all genres
+def get_genres():
+    try:
+        genres = ytmusic.get_mood_categories()
+        genres = genres.get("Genres", [])
+        if not genres:
+            print("No genres found in 'Genres' section.")
+            return None
+
+        # print(genres)
+
+        return [
+            {
+                'title': genre.get("title"),
+                'params': genre.get("params")
+            }
+            for genre in genres
+        ]
+    except Exception as e:
+        print(f"Error fetching genres: {e}")
+        return None
+
+# Function for fetching songs based on a genre (Didn't work on most genres)
+def get_genre_songs(params=None):
+    try:
+        genre_songs = ytmusic.get_mood_playlists(params)
+
+        print(genre_songs)
+    except Exception as e:
+        print(f"Error fetching genre songs: {e}")
+        return None
+
+
 # Example Test Run ===
 if __name__ == "__main__":
-    print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
+    # print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
     '''
     print("\n=== Recommended Songs ===")
     recommended = get_recommended_songs()
@@ -288,4 +318,10 @@ if __name__ == "__main__":
 
     print("US Charts:", ytmusic.get_charts(country="US"))
     '''
+    '''
+    genres = get_genres()
+    for genre in genres:
+        print(f"{genre['title']} {genre['params']}")
 
+    get_genre_songs('ggMPOg1uXzdlSXhKZ0hMV1Z4')
+    '''
