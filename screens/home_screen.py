@@ -199,6 +199,7 @@ class HomeScreen(QWidget):
                             border-radius: 5px;
                         }
                     ''')
+            song_btn.clicked.connect(lambda _=None, s=song: self.app_controller.open_api_music_player(s))
             content_layout.addWidget(song_btn)
 
         content_widget.setLayout(content_layout)

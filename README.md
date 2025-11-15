@@ -1,7 +1,8 @@
 # README
 
 ## IMPORTANT NOTE!
-If there's some error when requesting an api call to ytmusicapi, rerun the program just in case.
+- If there's some error when requesting an api call to ytmusicapi, rerun the program just in case.
+- Due to fetching and extracting music file from youtube, the program can be laggy and buggy.
 
 ## REQUIRED INSTALL:
 
@@ -16,8 +17,9 @@ If there's some error when requesting an api call to ytmusicapi, rerun the progr
 `pip install ytmusicapi yt-dlp`
 
 `pip install python-vlc`
+> **NOTE:** You need to download VLC media player
 
-## NOTE FOR UPDATING UI FILE: 
+## FOR UPDATING UI FILE: 
 After you created/update your UI file, you need to convert from ui (xml) to python file by entering this command to terminal:
 
 python -m PyQt6.uic.pyuic UI/'name of ui' -o UI/'name of python file'
