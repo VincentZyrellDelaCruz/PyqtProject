@@ -1,5 +1,7 @@
 import os, config, eyed3, re
-from PyQt6.QtGui import QPixmap
+
+import requests
+from PyQt6.QtGui import QPixmap, QImage
 from eyed3.id3.frames import ImageFrame
 
 def get_embedded_image(song_path, square=False):
@@ -43,7 +45,6 @@ def get_embedded_image(song_path, square=False):
     return pixmap
 
 def get_music_metadata(song_path):
-    """Return (artist_name, album_art_pixmap)"""
     artist = "Unknown Artist"
     pixmap = get_embedded_image(song_path)
 
@@ -57,14 +58,6 @@ def get_music_metadata(song_path):
     return artist, pixmap
 
 def get_lyrics(song_path):
-    """
-    Returns a list of (timestamp_ms, lyric_line) tuples.
-
-    Priority:
-    1. Embedded USLT (standard lyrics frame)
-    2. Custom fields (description, synopsis, comment)
-    3. .lrc file in config.LYRICS_PATH
-    """
     lyrics_data = []
 
     try:
@@ -110,7 +103,7 @@ def get_lyrics(song_path):
     except Exception as e:
         print(f"[Lyrics] Error extracting embedded/custom lyrics: {e}")
 
-    # --- Step 3: Fallback to external .lrc file ---
+    # Fallback to external .lrc file
     try:
         song_name = os.path.splitext(os.path.basename(song_path))[0]
         lrc_path = os.path.join(config.LYRICS_PATH, f"{song_name}.lrc")
@@ -132,6 +125,15 @@ def get_lyrics(song_path):
     return sorted(lyrics_data, key=lambda x: x[0])
 
 
-
+def display_thumbnail(url):
+    try:
+        resp = requests.get(url)
+        resp.raise_for_status()
+        image = QImage()
+        image.loadFromData(resp.content)
+        return QPixmap.fromImage(image)
+    except Exception as e:
+        print("Failed to load pixmap from URL:", e)
+        return None
 
 

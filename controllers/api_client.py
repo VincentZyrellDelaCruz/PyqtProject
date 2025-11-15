@@ -1,4 +1,5 @@
 from ytmusicapi import YTMusic
+import yt_dlp as ytdl
 
 # Initialize ytmusicapi
 ytmusic = YTMusic()
@@ -102,8 +103,8 @@ def get_weekly_top_10(country="US"):
                 "rank": idx + 1,
                 "title": title,
                 "artist": artist_name,
-                "video_id": video_id,
-                "thumbnail": thumbnail
+                "videoId": video_id,
+                "thumbnails": thumbnail
             })
 
         return top_10
@@ -281,7 +282,6 @@ def get_genre_songs(params=None):
         print(f"Error fetching genre songs: {e}")
         return None
 
-
 # Example Test Run ===
 if __name__ == "__main__":
     # print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
@@ -309,13 +309,13 @@ if __name__ == "__main__":
     if artist_songs:
         for idx, s in enumerate(artist_songs, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
-
+'''
     print("\n=== Search Song Example ===")
     song_results = get_song_titles("Blinding Lights")
     if song_results:
         for idx, s in enumerate(song_results, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
-
+    '''
     print("US Charts:", ytmusic.get_charts(country="US"))
     '''
     '''

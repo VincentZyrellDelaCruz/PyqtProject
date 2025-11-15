@@ -2,12 +2,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QStackedWidget
 
-from screens.main_screen import MainScreen
 from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
 from screens.main_screen import MainScreen
 from screens.music_player import MusicPlayer
+from screens.apionly_music_player import ApiMusicPlayer
 import config, os
 
 class AppController:
@@ -103,3 +103,7 @@ class AppController:
         music_player = MusicPlayer(song_title)
         music_player.exec()
 
+    def open_api_music_player(self, song):
+        print(f"{song['title']} - {song['artist']} ({song['videoId']}) {song['thumbnails']}")
+        music_player = ApiMusicPlayer(song)
+        music_player.exec()

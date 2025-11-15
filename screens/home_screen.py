@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayo
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 import controllers.api_client as ytapi
+from controllers.clickable import ClickableLabel
 import os, config, requests
 
 
@@ -304,7 +305,7 @@ class HomeScreen(QWidget):
         img_label.setFixedSize(140, 140)
         img_label.setStyleSheet("border-radius: 10px; background-color: #444;")
 
-        image = self.get_thumbnail(song.get("thumbnail", ""))
+        image = self.get_thumbnail(song.get("thumbnails", ""))
 
         pixmap = QPixmap()
         pixmap.loadFromData(image)
@@ -316,17 +317,19 @@ class HomeScreen(QWidget):
         vbox.addWidget(img_label)
 
         # Title
-        title_label = QLabel(song.get("title", "Unknown"))
+        title_label = ClickableLabel(song.get("title", "Unknown"))
         title_label.setWordWrap(True)
         title_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         title_label.setStyleSheet("color: white;")
         vbox.addWidget(title_label)
 
         # Artist
-        artist_label = QLabel(song.get("artist", "Unknown"))
+        artist_label = ClickableLabel(song.get("artist", "Unknown"))
         artist_label.setFont(QFont("Segoe UI", 9))
         artist_label.setStyleSheet("color: #BBBBBB;")
         vbox.addWidget(artist_label)
+
+        title_label.clicked.connect(lambda: self.app_controller.open_api_music_player(song))
 
         return card
 

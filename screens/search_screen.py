@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayo
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QIcon
 import controllers.api_client as ytapi
-import os, config
+from controllers.music_metadata import display_thumbnail
 
 
 class SearchScreen(QWidget):
@@ -100,6 +100,8 @@ class SearchScreen(QWidget):
         """)
         frame.setVisible(False)  # hidden initially
 
+        frame.setMinimumHeight(1000)
+
         results_layout = QVBoxLayout(frame)
         results_layout.setContentsMargins(18, 14, 18, 14)
         results_layout.setSpacing(10)
@@ -174,9 +176,17 @@ class SearchScreen(QWidget):
         song_layout.setSpacing(14)
 
         # Icon
-        icon_label = QLabel("♪")
+        icon_label = QLabel()
         icon_label.setFixedSize(48, 48)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        thumbnail_url = song.get('thumbnails')
+
+        if thumbnail_url:
+            icon_label.setPixmap(display_thumbnail(thumbnail_url))
+        else:
+            icon_label.setText("♪")
+
         icon_label.setStyleSheet("""
             QLabel {
                 background-color: #1DB954;
@@ -187,11 +197,24 @@ class SearchScreen(QWidget):
             }
         """)
 
-        # Title
+        # Title and Artist stacked vertically
+        text_container = QWidget()
+        text_layout = QVBoxLayout(text_container)
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(2)
+
         name_label = QLabel(song.get('title'))
-        name_label.setFont(QFont("Segoe UI", 14))
+        name_label.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
         name_label.setStyleSheet("color: white; background-color: transparent;")
         name_label.setWordWrap(False)
+
+        artist_label = QLabel(song.get('artist', 'Unknown Artist'))
+        artist_label.setFont(QFont("Segoe UI", 11))
+        artist_label.setStyleSheet("color: white; background-color: transparent;")
+        artist_label.setWordWrap(False)
+
+        text_layout.addWidget(name_label)
+        text_layout.addWidget(artist_label)
 
         # Play button
         play_btn = QPushButton("▶")
@@ -213,9 +236,10 @@ class SearchScreen(QWidget):
                 background-color: #169c46;
             }
         """)
+        play_btn.clicked.connect(lambda: self.app_controller.open_api_music_player(song))
 
         song_layout.addWidget(icon_label)
-        song_layout.addWidget(name_label, 1)
+        song_layout.addWidget(text_container, 1)
         song_layout.addWidget(play_btn)
 
         return song_widget
