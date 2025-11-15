@@ -1,16 +1,11 @@
 from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout, QLabel
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
 from functools import partial
 from UI.music_player_ui import Ui_Dialog
 import sys, os, random, config
 from controllers.music_metadata import get_music_metadata, get_lyrics
-
-
-# Temporary variables
-# song_title = 'Never Gonna Give You Up.mp3'
-# song_image = config.IMAGE_PATH + 'NeverGonnaGiveYouUp.jpg'
+import vlc
 
 class MusicPlayer(QDialog):
     def __init__(self, song_title, parent=None):
@@ -35,9 +30,14 @@ class MusicPlayer(QDialog):
 
         self.display_local_playlist(local_playlist)
 
-        # Sets audio
-        self.audio_output = QAudioOutput()
-        self.player = QMediaPlayer()
+        # === VLC Instance & Player ===
+        self.instance = vlc.Instance('--quiet', '--no-video')  # No video, quiet mode
+        self.player = self.instance.media_player_new()
+
+        # Polling timer for position/duration (VLC has no signals)
+        self.position_timer = QTimer(self)
+        self.position_timer.timeout.connect(self.update_position_and_duration)
+        self.position_timer.start(100)  # Update every 100ms
 
         self.load_music()
 
@@ -58,12 +58,14 @@ class MusicPlayer(QDialog):
 
     def cleanup(self):
         """Cleanup method to stop playback and timers"""
-        if hasattr(self, 'player'):
+        if hasattr(self, 'player') and self.player:
             self.player.stop()
         if hasattr(self, 'rotation_timer'):
             self.rotation_timer.stop()
         if hasattr(self, 'scroll_timer'):
             self.scroll_timer.stop()
+        if hasattr(self, 'position_timer'):
+            self.position_timer.stop()
 
     def closeEvent(self, event):
         """Override close event to stop playback when widget is closed"""
@@ -82,7 +84,6 @@ class MusicPlayer(QDialog):
 
         self.ui.volume_frame.setVisible(False)
         self.button_group.setExclusive(True)
-        self.player.setAudioOutput(self.audio_output)
 
         self.ui.playback_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(0))
         self.ui.list_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(1))
@@ -93,24 +94,21 @@ class MusicPlayer(QDialog):
 
         self.ui.playButton.clicked.connect(self.toggle_play_pause)
 
-        self.player.positionChanged.connect(self.update_position)
-        self.player.durationChanged.connect(self.update_duration)
-
-        self.player.mediaStatusChanged.connect(self.check_song_end)
+        # Simulate signals via polling
+        # (handled in update_position_and_duration)
 
         self.ui.progressTime.sliderPressed.connect(self.slider_pressed)
         self.ui.progressTime.sliderReleased.connect(self.slider_released)
 
         self.ui.volume_slider.setRange(0, 100)
         self.ui.volume_slider.setValue(config.DEFAULT_VOLUME)
-        self.audio_output.setVolume(config.DEFAULT_VOLUME / 100)
+        self.player.audio_set_volume(config.DEFAULT_VOLUME)
         self.ui.volume_label.setText(str(config.DEFAULT_VOLUME))
 
         self.ui.volume_slider.valueChanged.connect(self.change_volume)
 
     def change_volume(self, value):
-        volume = value / 100
-        self.audio_output.setVolume(volume)
+        self.player.audio_set_volume(value)
         self.ui.volume_label.setText(str(value))
 
     # Function that gets selected music/song file, including its metadata (images and artist).
@@ -121,16 +119,17 @@ class MusicPlayer(QDialog):
             return
 
         try:
-            self.player.setSource(QUrl.fromLocalFile(song_path))
+            media = self.instance.media_new(song_path)
+            self.player.set_media(media)
         except Exception as e:
-            print("Warning: setSource failed:", e)
+            print("Warning: Failed to load media:", e)
 
         self.ui.song_title.setText(os.path.basename(song_path).removesuffix('.mp3'))
         self.setWindowTitle('Now playing: ' + self.song_title.replace('.mp3', ''))
 
         # Get metadata (artist + album art)
         artist, pixmap = get_music_metadata(song_path)
-        self.artist_full_text = artist  or "Unknown Artist"
+        self.artist_full_text = artist or "Unknown Artist"
         self.ui.artist_name.setText(artist)
         self.scroll_offset = 0
 
@@ -156,13 +155,17 @@ class MusicPlayer(QDialog):
         # Display the lyrics if available
         if getattr(self, "lyrics_label", None) is not None:
             if self.lyrics_data:
-                # Show the first available lyric (timestamp 0 or first sync entry)
                 try:
                     self.lyrics_label.setText(self.lyrics_data[0][1])
                 except Exception:
                     self.lyrics_label.setText("No lyrics available.")
             else:
                 self.lyrics_label.setText("No lyrics available.")
+
+        # Reset progress
+        self.ui.progressTime.setValue(0)
+        self.ui.currentTime.setText("00:00")
+        self.ui.totalTime.setText("00:00")
 
     # Function that changes the song
     def change_music(self, song):
@@ -212,8 +215,6 @@ class MusicPlayer(QDialog):
         scroll_area.setWidget(content_widget)
         self.ui.list_layout.addWidget(scroll_area)
 
-        # print(''.join(filename for filename in filenames))
-
     def scroll_artist_name(self):
         label = self.ui.artist_name
         text = self.artist_full_text
@@ -228,19 +229,15 @@ class MusicPlayer(QDialog):
         # Only scroll if text is wider than label
         if text_width > label_width:
             self.scroll_offset = (self.scroll_offset + 3) % (text_width + 30)
-            # Padding spaces so the text restarts smoothly
             display_text = text + "   " + text
             label.setText(display_text)
             label.setIndent(-self.scroll_offset)
         else:
-            # Reset text alignment when short
             label.setText(text)
             label.setIndent(0)
 
     def setup_lyrics_display(self):
         """Create scrollable lyrics area dynamically inside lyrics_layout."""
-
-        # Only proceed if UI layout exists
         if not hasattr(self.ui, "lyrics_layout") or self.ui.lyrics_layout is None:
             print("UI does not have lyrics_layout; skipping lyrics setup.")
             return
@@ -263,7 +260,6 @@ class MusicPlayer(QDialog):
         self.lyrics_layout_inner.addWidget(self.lyrics_label)
         self.lyrics_scroll.setWidget(self.lyrics_container)
 
-        # Add the scroll area to the existing layout in your UI
         try:
             self.ui.lyrics_layout.addWidget(self.lyrics_scroll)
         except Exception as e:
@@ -274,7 +270,6 @@ class MusicPlayer(QDialog):
         if not getattr(self, "lyrics_data", None):
             return
 
-        # if unsynchronized single block
         if len(self.lyrics_data) == 1 and self.lyrics_data[0][0] == 0:
             try:
                 self.lyrics_label.setText(self.lyrics_data[0][1])
@@ -282,7 +277,6 @@ class MusicPlayer(QDialog):
                 pass
             return
 
-        # find the index (linear scan is fine)
         idx = 0
         for i, (timestamp, text) in enumerate(self.lyrics_data):
             try:
@@ -294,14 +288,12 @@ class MusicPlayer(QDialog):
 
         self.current_lyric_index = idx
 
-        # set lyric text
         if 0 <= self.current_lyric_index < len(self.lyrics_data):
             try:
                 self.lyrics_label.setText(self.lyrics_data[self.current_lyric_index][1])
             except Exception:
                 pass
 
-        # Auto-scroll: guard against division by zero
         try:
             sb = self.lyrics_scroll.verticalScrollBar()
             maximum = sb.maximum()
@@ -310,12 +302,10 @@ class MusicPlayer(QDialog):
             value = int(maximum * fraction)
             sb.setValue(value)
         except Exception:
-            # silently ignore scroll errors (so it won't crash)
             pass
 
     @staticmethod
-    def cd_pixmap(pixmap, size, hole_ratio = 0.25):
-        # Step 1: Crop the original to a 1:1 square before scaling
+    def cd_pixmap(pixmap, size, hole_ratio=0.25):
         w, h = pixmap.width(), pixmap.height()
         if w != h:
             side = min(w, h)
@@ -323,28 +313,23 @@ class MusicPlayer(QDialog):
             y = (h - side) // 2
             pixmap = pixmap.copy(x, y, side, side)
 
-        # Step 2: Scale perfectly to the CD size (no aspect stretch)
         scaled = pixmap.scaled(size, size, Qt.AspectRatioMode.IgnoreAspectRatio,
                                Qt.TransformationMode.SmoothTransformation)
 
-        # Step 3: Create transparent CD mask
         mask = QPixmap(size, size)
         mask.fill(Qt.GlobalColor.transparent)
 
         painter = QPainter(mask)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # Outer circle (CD)
         outer_path = QPainterPath()
         outer_path.addEllipse(0, 0, size, size)
 
-        # Inner hole
         hole_size = int(size * hole_ratio)
         hole_offset = (size - hole_size) // 2
         inner_path = QPainterPath()
         inner_path.addEllipse(hole_offset, hole_offset, hole_size, hole_size)
 
-        # Combine (subtract hole)
         final_path = outer_path.subtracted(inner_path)
         painter.setClipPath(final_path)
         painter.drawPixmap(0, 0, scaled)
@@ -356,12 +341,10 @@ class MusicPlayer(QDialog):
         if hasattr(self, "fixed_pixmap") and not self.fixed_pixmap.isNull():
             self.rotation_angle = (self.rotation_angle + 2) % 360
 
-            # Create a constant-size empty canvas
             size = self.fixed_pixmap.size()
             rotated_canvas = QPixmap(size)
             rotated_canvas.fill(Qt.GlobalColor.transparent)
 
-            # Paint the rotated image centered on the canvas
             painter = QPainter(rotated_canvas)
             painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
             painter.translate(size.width() / 2, size.height() / 2)
@@ -399,8 +382,8 @@ class MusicPlayer(QDialog):
 
     def loop_shuffle(self):
         self.repeat += 1
-
-        if self.repeat >= 3: self.repeat = 0
+        if self.repeat >= 3:
+            self.repeat = 0
 
         if self.repeat == 0:
             self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "continue.svg"))
@@ -421,66 +404,71 @@ class MusicPlayer(QDialog):
             self.rotation_timer.stop()
 
     def slider_pressed(self):
-        # Stop auto-updating while dragging
         self.is_seeking = True
 
     def slider_released(self):
-        # When the user releases the slider, seek to that position
         self.is_seeking = False
-        self.player.setPosition(self.ui.progressTime.value())
+        position = self.ui.progressTime.value()
+        duration = self.player.get_length()
+        if duration > 0:
+            self.player.set_time(position)
 
-    def update_position(self, position):
-        # Only update if the user is NOT dragging
-        if not getattr(self, "is_seeking", False):
+    def update_position_and_duration(self):
+        """Poll VLC for position and duration, simulate Qt signals"""
+        if not self.player or not self.player.get_media():
+            return
+
+        duration = self.player.get_length()  # in ms
+        position = self.player.get_time()     # in ms
+
+        # Update duration once
+        if duration > 0 and self.ui.progressTime.maximum() != duration:
+            self.ui.progressTime.setMaximum(duration)
+            self.ui.totalTime.setText(self.format_time(duration))
+
+        # Update position
+        if not getattr(self, "is_seeking", False) and position >= 0:
             self.ui.progressTime.setValue(position)
             self.ui.currentTime.setText(self.format_time(position))
 
-            # Sync lyrics if available
+            # Sync lyrics
             if hasattr(self, "lyrics_data") and self.lyrics_data:
                 self.sync_lyrics(position)
 
-    def update_duration(self, duration):
-        self.ui.progressTime.setMaximum(duration)
-        self.ui.totalTime.setText(self.format_time(duration))
+        # Check for end of media
+        if duration > 0 and position >= duration - 500:  # near end
+            if hasattr(self, "_end_checked") and self._end_checked:
+                return
+            self._end_checked = True
+            self.check_song_end()
+        else:
+            self._end_checked = False
 
     def seek_position(self, position):
-        self.player.setPosition(position)
+        self.player.set_time(position)
 
     def format_time(self, ms):
+        if ms < 0:
+            return "00:00"
         seconds = ms // 1000
         minutes = seconds // 60
         seconds = seconds % 60
         return f"{minutes:02}:{seconds:02}"
 
     # Function that interacts after the song ends (3 modes)
-    def check_song_end(self, status):
-        # Check if the current song has ended
-        if status == QMediaPlayer.MediaStatus.EndOfMedia:
-            # Loop mode
-            # Continue mode (play next)
-            if self.repeat == 0:
-                print("Continue mode - next song")
-                local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-                current_index = local_playlist.index(self.song_title)
-                next_index = (current_index + 1) % len(local_playlist)
-                self.change_music(local_playlist[next_index])
-            elif self.repeat == 1:
-                print("Looping current song...")
-                self.player.setPosition(0)
-                self.player.play()
-            # Shuffle mode
-            elif self.repeat == 2:
-                print("Shuffle mode - random song")
-                local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-
-                next_song = random.choice(local_playlist)
-                self.change_music(next_song)
-
-
-'''
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MusicPlayer()
-    window.show()
-    sys.exit(app.exec())
-'''
+    def check_song_end(self):
+        if self.repeat == 0:
+            print("Continue mode - next song")
+            local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
+            current_index = local_playlist.index(self.song_title)
+            next_index = (current_index + 1) % len(local_playlist)
+            self.change_music(local_playlist[next_index])
+        elif self.repeat == 1:
+            print("Looping current song...")
+            self.player.set_time(0)
+            self.player.play()
+        elif self.repeat == 2:
+            print("Shuffle mode - random song")
+            local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
+            next_song = random.choice(local_playlist)
+            self.change_music(next_song)
