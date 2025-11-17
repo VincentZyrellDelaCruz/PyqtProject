@@ -209,7 +209,8 @@ def get_playlist(playlist_id):
         {
             "title": track["title"],
             "artist": track["artists"][0]["name"],
-            "videoId": track.get("videoId")
+            "videoId": track.get("videoId"),
+            "thumbnails": track.get("thumbnails", [{}])[-1].get("url", "")
         }
         for track in playlist["tracks"]
     ]
@@ -284,7 +285,7 @@ def get_genre_songs(params=None):
 
 # Example Test Run ===
 if __name__ == "__main__":
-    # print(get_playlist('OLAK5uy_kKuGqoUQo37hejjtZXF1ALYGh1gSXjcUQ'))
+    print(get_playlist('RDCLAK5uy_nIawIGq1WuKLBwtCIIcCh3WRwh-u21efk'))
     '''
     print("\n=== Recommended Songs ===")
     recommended = get_recommended_songs()
@@ -310,11 +311,13 @@ if __name__ == "__main__":
         for idx, s in enumerate(artist_songs, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
 '''
+    '''
     print("\n=== Search Song Example ===")
     song_results = get_song_titles("Blinding Lights")
     if song_results:
         for idx, s in enumerate(song_results, start=1):
             print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
+    '''
     '''
     print("US Charts:", ytmusic.get_charts(country="US"))
     '''

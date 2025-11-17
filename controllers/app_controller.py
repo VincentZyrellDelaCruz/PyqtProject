@@ -84,20 +84,25 @@ class AppController:
             self.main.ui.page_label.setText('HOME')
             self.main.ui.home_stack.setCurrentIndex(2)
 
+    def goto_genre(self):
+        if self.main and hasattr(self.main, "ui"):
+            self.main.ui.page_label.setText('GENRE')
+            self.main.ui.home_stack.setCurrentIndex(3)
+
     def goto_search(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('SEARCH')
-            self.main.ui.home_stack.setCurrentIndex(3)
+            self.main.ui.home_stack.setCurrentIndex(4)
 
     def goto_about(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('ABOUT')
-            self.main.ui.home_stack.setCurrentIndex(4)
+            self.main.ui.home_stack.setCurrentIndex(5)
 
     def goto_profile(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('USER PROFILE')
-            self.main.ui.home_stack.setCurrentIndex(5)
+            self.main.ui.home_stack.setCurrentIndex(6)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)
