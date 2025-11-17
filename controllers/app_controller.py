@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QStackedWidget
 
+from screens.artist_screen import ArtistScreen
 from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
@@ -103,6 +104,23 @@ class AppController:
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('USER PROFILE')
             self.main.ui.home_stack.setCurrentIndex(6)
+
+    def goto_artist(self, artist):
+        if self.main and hasattr(self.main, "ui"):
+
+            # If an Artist page already exists at index 7 — remove it
+            if self.main.ui.home_stack.count() > 7:
+                old = self.main.ui.home_stack.widget(7)
+                self.main.ui.home_stack.removeWidget(old)
+                old.deleteLater()  # <-- prevents ghosts & leftover async loaders
+
+            # Create and insert fresh ArtistScreen
+            artist_widget = ArtistScreen(self, artist)
+            self.main.ui.home_stack.insertWidget(7, artist_widget)
+
+            # Show it
+            self.main.ui.page_label.setText('ARTIST')
+            self.main.ui.home_stack.setCurrentIndex(7)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)

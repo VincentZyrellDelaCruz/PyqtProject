@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QButtonGroup, QScrollArea, QWidget, QSizePolicy
 from PyQt6.QtGui import QIcon, QFont, QPixmap
 from UI.main_screen_ui import Ui_MainWindow
+from screens.artist_screen import ArtistScreen
 from screens.home_screen import HomeScreen
 from screens.genre_screen import GenreScreen
 from screens.search_screen import SearchScreen
@@ -128,7 +129,7 @@ class MainScreen(QMainWindow):
 
         # Add to stacked widget (home_stack). Keep track of its index for navigation.
         self.home_widget_index = self.ui.home_stack.addWidget(scroll_area)
-        print(self.home_widget_index)
+        # print(self.home_widget_index)
 
     def add_home_page(self):
         home_widget = HomeScreen(self.app_controller)

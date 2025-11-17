@@ -244,6 +244,7 @@ class HomeScreen(QWidget):
             QPushButton:hover {background:#3a3a3a;}
             QPushButton:checked {background:#1DB954;}
         ''')
+        btn.clicked.connect(lambda: self.app_controller.goto_artist(name))
 
         placeholder_icon = QIcon(self._placeholder.scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio,
                                                           Qt.TransformationMode.SmoothTransformation))
