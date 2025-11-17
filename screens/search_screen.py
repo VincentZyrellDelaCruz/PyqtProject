@@ -1,17 +1,21 @@
+from typing import List
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QSizePolicy, QScrollArea, QLineEdit
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtCore import Qt, QSize, QByteArray, QThreadPool
+from PyQt6.QtGui import QFont, QIcon, QPixmap
 import controllers.api_client as ytapi
-from controllers.music_metadata import display_thumbnail
-
+from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 
 class SearchScreen(QWidget):
     def __init__(self, app_controller=None):
         super().__init__()
         self.app_controller = app_controller
 
+        self.active_loaders: List[ImageLoader] = []
+
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setStyleSheet("SearchScreen { background-color: #121212; }")
+
+        self._placeholder = load_placeholder_pixmap()
 
         self.init_ui()
 
@@ -61,6 +65,7 @@ class SearchScreen(QWidget):
                 background-color: #333;
             }
         """)
+        self.search_input.returnPressed.connect(self.search_handling)
 
         # Search button
         self.search_button = QPushButton("Search")
@@ -142,7 +147,8 @@ class SearchScreen(QWidget):
             return
 
         # Show results section
-        self.results_frame.setVisible(True)
+        if not self.results_frame.isVisible():
+            self.results_frame.setVisible(True)
 
         # Clear any previous results
         while self.scroll_layout.count():
@@ -180,10 +186,16 @@ class SearchScreen(QWidget):
         icon_label.setFixedSize(48, 48)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        thumbnail_url = song.get('thumbnails')
+        placeholder = self._placeholder.scaled(
+            48, 48,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        icon_label.setPixmap(placeholder)
 
+        thumbnail_url = song.get('thumbnails')
         if thumbnail_url:
-            icon_label.setPixmap(display_thumbnail(thumbnail_url))
+            self._async_load_icon(thumbnail_url, icon_label)
         else:
             icon_label.setText("♪")
 
@@ -243,3 +255,35 @@ class SearchScreen(QWidget):
         song_layout.addWidget(play_btn)
 
         return song_widget
+
+    def _async_load_icon(self, url: str, label: QLabel):
+        loader = ImageLoader(url)
+        self.active_loaders.append(loader)  # Track it
+
+        def on_finished(img_url: str, data: QByteArray):
+            # Remove from active list first
+            if loader in self.active_loaders:
+                self.active_loaders.remove(loader)
+
+            if img_url != url or data.isEmpty():
+                return
+
+            # Safety: if label was deleted, skip
+            if label is None or not label.parent():
+                return
+
+            pix = QPixmap()
+            if not pix.loadFromData(data):
+                return
+
+            # Force 1:1 square
+            pix = pix.scaled(
+                48, 48,
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            pix = pix.copy((pix.width() - 48) // 2, (pix.height() - 48) // 2, 48, 48)
+            label.setPixmap(pix)
+
+        loader.signals.finished.connect(on_finished)
+        QThreadPool.globalInstance().start(loader)

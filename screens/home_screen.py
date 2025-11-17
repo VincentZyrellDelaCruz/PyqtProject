@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QSizePolicy, QScrollArea
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QThreadPool, QByteArray
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 import controllers.api_client as ytapi
 from controllers.clickable import ClickableLabel
+from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 import os, config, requests
 
 
@@ -14,6 +15,9 @@ class HomeScreen(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setStyleSheet("HomeScreen { background-color: #121212; }")
 
+        # Load placeholder once
+        self._placeholder = load_placeholder_pixmap()
+
         self.create_home_ui()
 
     def create_home_ui(self):
@@ -21,11 +25,11 @@ class HomeScreen(QWidget):
         main_layout.setContentsMargins(24, 24, 24, 24)
         main_layout.setSpacing(24)
 
-        # --- Top Songs Section ---
+        # Top Songs Section
         top_songs_section = self.create_top_songs_section()
         main_layout.addWidget(top_songs_section)
 
-        # --- Two-column layout for Artists + Recommendations ---
+        # Two-column layout for Artists + Recommendations
         two_column_frame = QFrame()
         two_column_frame.setStyleSheet("background: transparent;")
         two_column_layout = QHBoxLayout(two_column_frame)
@@ -81,7 +85,7 @@ class HomeScreen(QWidget):
             QScrollBar:horizontal {
                 background: #1E1E1E;
                 height: 8px;
-                margin: 0px;  /* ✅ removes white margin at edges */
+                margin: 0px;  
                 border-radius: 4px;
             }
 
@@ -91,7 +95,6 @@ class HomeScreen(QWidget):
                 min-width: 20px;
             }
 
-            /* ✅ Hide arrow buttons completely */
             QScrollBar::add-line:horizontal,
             QScrollBar::sub-line:horizontal {
                 background: none;
@@ -99,7 +102,6 @@ class HomeScreen(QWidget):
                 height: 0px;
             }
 
-            /* ✅ Hide any leftover gaps on edges */
             QScrollBar::add-page:horizontal,
             QScrollBar::sub-page:horizontal {
                 background: #1E1E1E;
@@ -158,48 +160,10 @@ class HomeScreen(QWidget):
         content_layout.setSpacing(10)
 
         # Load top artists from API client
-        songs = ytapi.get_recommended_songs()
+        songs = ytapi.get_recommended_songs() or []
 
         for song in songs:
-            song_title = song.get('title', 'Unknown Artist')
-            song_icon = song.get('thumbnails', '')  # match your dict key
-
-            song_btn = QPushButton((' ' * 3) + song_title)
-            song_btn.setFont(QFont('Segoe UI', 14))
-
-            # Get thumbnail bytes
-            thumbnail_data = self.get_thumbnail(song_icon)
-
-            # Load the image from the bytes into QPixmap
-            pixmap = QPixmap()
-            if pixmap.loadFromData(thumbnail_data):
-                song_btn.setIcon(QIcon(pixmap))
-            else:
-                # If loading the image fails, set a default (placeholder) icon
-                pixmap.loadFromData(self.get_thumbnail(''))  # Use the default image for failed loads
-                song_btn.setIcon(QIcon(pixmap))
-
-            song_btn.setIconSize(QSize(40, 40))
-            song_btn.setStyleSheet('''
-                        QPushButton { 
-                            color: #fff;
-                            text-align: left;
-                            background-color: transparent; 
-                            padding: 8px 10px;
-                            border: none;
-                            border-radius: 6px; 
-                        }
-                        QPushButton:hover {
-                            background-color: #3a3a3a;
-                        }
-                        QPushButton:checked {
-                            background-color: #1DB954;
-                        }
-                        QIcon {
-                            border-radius: 5px;
-                        }
-                    ''')
-            song_btn.clicked.connect(lambda _=None, s=song: self.app_controller.open_api_music_player(s))
+            song_btn = self.create_song_button(song)
             content_layout.addWidget(song_btn)
 
         content_widget.setLayout(content_layout)
@@ -235,53 +199,59 @@ class HomeScreen(QWidget):
         content_layout.setSpacing(10)
 
         # Load top artists from API client
-        artists = ytapi.get_top_artists()
+        artists = ytapi.get_top_artists() or []
 
         for artist in artists:
-            artist_name = artist.get('name', 'Unknown Artist')
-            artist_icon = artist.get('thumbnails', '')  # match your dict key
-
-            artist_btn = QPushButton((' '*3) + artist_name)
-            artist_btn.setFont(QFont('Segoe UI', 14))
-
-            # Get thumbnail bytes
-            thumbnail_data = self.get_thumbnail(artist_icon)
-
-            # Load the image from the bytes into QPixmap
-            pixmap = QPixmap()
-            if pixmap.loadFromData(thumbnail_data):
-                artist_btn.setIcon(QIcon(pixmap))
-            else:
-                # If loading the image fails, set a default (placeholder) icon
-                pixmap.loadFromData(self.get_thumbnail(''))  # Use the default image for failed loads
-                artist_btn.setIcon(QIcon(pixmap))
-
-            artist_btn.setIconSize(QSize(40, 40))
-            artist_btn.setStyleSheet('''
-                QPushButton { 
-                    color: #fff;
-                    text-align: left;
-                    background-color: transparent; 
-                    padding: 8px 10px;
-                    border: none;
-                    border-radius: 6px; 
-                }
-                QPushButton:hover {
-                    background-color: #3a3a3a;
-                }
-                QPushButton:checked {
-                    background-color: #1DB954;
-                }
-                QIcon {
-                    border-radius: 5px;
-                }
-            ''')
+            artist_btn = self.create_artist_button(artist)
             content_layout.addWidget(artist_btn)
 
-        content_widget.setLayout(content_layout)
         card_layout.addWidget(content_widget)
-
         return top_artist_frame
+
+    def create_song_button(self, song):
+        title = song.get('title', 'Unknown')
+        url = song.get('thumbnails', '')
+
+        btn = QPushButton('   ' + title)
+        btn.setFont(QFont('Segoe UI', 14))
+        btn.setIconSize(QSize(40, 40))
+        btn.setStyleSheet('''
+            QPushButton {color:#fff; text-align:left; background:transparent;
+                         padding:8px 10px; border:none; border-radius:6px;}
+            QPushButton:hover {background:#3a3a3a;}
+            QPushButton:checked {background:#1DB954;}
+        ''')
+
+        placeholder_icon = QIcon(self._placeholder.scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio,
+                                                          Qt.TransformationMode.SmoothTransformation))
+        btn.setIcon(placeholder_icon)
+        btn.clicked.connect(lambda _, s=song: self.app_controller.open_api_music_player(s))
+
+        if url:
+            self._async_load_button_icon(url, btn, size=40)
+        return btn
+
+    def create_artist_button(self, artist):
+        name = artist.get('name', 'Unknown Artist')
+        url = artist.get('thumbnails', '')
+
+        btn = QPushButton('   ' + name)
+        btn.setFont(QFont('Segoe UI', 14))
+        btn.setIconSize(QSize(40, 40))
+        btn.setStyleSheet('''
+            QPushButton {color:#fff; text-align:left; background:transparent;
+                         padding:8px 10px; border:none; border-radius:6px;}
+            QPushButton:hover {background:#3a3a3a;}
+            QPushButton:checked {background:#1DB954;}
+        ''')
+
+        placeholder_icon = QIcon(self._placeholder.scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio,
+                                                          Qt.TransformationMode.SmoothTransformation))
+        btn.setIcon(placeholder_icon)
+
+        if url:
+            self._async_load_button_icon(url, btn, size=40)
+        return btn
 
     def create_song_card(self, song):
         card = QFrame()
@@ -305,15 +275,9 @@ class HomeScreen(QWidget):
         img_label = QLabel()
         img_label.setFixedSize(140, 140)
         img_label.setStyleSheet("border-radius: 10px; background-color: #444;")
-
-        image = self.get_thumbnail(song.get("thumbnails", ""))
-
-        pixmap = QPixmap()
-        pixmap.loadFromData(image)
-        pixmap = pixmap.scaled(140, 140, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
-                                          Qt.TransformationMode.SmoothTransformation)
-        img_label.setPixmap(pixmap)
-
+        img_label.setPixmap(self._placeholder.scaled(140, 140,
+                                                     Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                                                     Qt.TransformationMode.SmoothTransformation))
 
         vbox.addWidget(img_label)
 
@@ -331,6 +295,10 @@ class HomeScreen(QWidget):
         vbox.addWidget(artist_label)
 
         title_label.clicked.connect(lambda: self.app_controller.open_api_music_player(song))
+
+        url = song.get("thumbnails", "")
+        if url:
+            self._async_load_card_image(url, img_label)
 
         return card
 
@@ -359,3 +327,31 @@ class HomeScreen(QWidget):
                 with open(placeholder_path, "rb") as f:
                     return f.read()
             return b""
+
+    def _async_load_button_icon(self, url: str, button: QPushButton, size: int = 40):
+        def on_finished(img_url: str, data: QByteArray):
+            if img_url != url or data.isEmpty():
+                return
+            pix = QPixmap()
+            pix.loadFromData(data)
+            pix = pix.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatio,
+                             Qt.TransformationMode.SmoothTransformation)
+            button.setIcon(QIcon(pix))
+
+        loader = ImageLoader(url)
+        loader.signals.finished.connect(on_finished)
+        QThreadPool.globalInstance().start(loader)
+
+    def _async_load_card_image(self, url: str, label: QLabel):
+        def on_finished(img_url: str, data: QByteArray):
+            if img_url != url or data.isEmpty():
+                return
+            pix = QPixmap()
+            pix.loadFromData(data)
+            pix = pix.scaled(140, 140, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                             Qt.TransformationMode.SmoothTransformation)
+            label.setPixmap(pix)
+
+        loader = ImageLoader(url)
+        loader.signals.finished.connect(on_finished)
+        QThreadPool.globalInstance().start(loader)

@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QButtonGroup,
 from PyQt6.QtGui import QIcon, QFont, QPixmap
 from UI.main_screen_ui import Ui_MainWindow
 from screens.home_screen import HomeScreen
+from screens.genre_screen import GenreScreen
 from screens.search_screen import SearchScreen
 from screens.profile_screen import ProfileScreen
 from screens.about_screen import AboutScreen
@@ -27,6 +28,7 @@ class MainScreen(QMainWindow):
         self.display_local_playlist()
 
         self.add_home_page()
+        self.add_genre_page()
         self.add_search_page()
         self.add_about_page()
         self.add_profile_page()
@@ -72,6 +74,9 @@ class MainScreen(QMainWindow):
 
         self.ui.home1.clicked.connect(self.app_controller.goto_home)
         self.ui.home2.clicked.connect(self.app_controller.goto_home)
+
+        self.ui.genre1.clicked.connect(self.app_controller.goto_genre)
+        self.ui.genre2.clicked.connect(self.app_controller.goto_genre)
 
         self.ui.search1.clicked.connect(self.app_controller.goto_search)
         self.ui.search2.clicked.connect(self.app_controller.goto_search)
@@ -128,6 +133,10 @@ class MainScreen(QMainWindow):
     def add_home_page(self):
         home_widget = HomeScreen(self.app_controller)
         self.add_page(home_widget)
+
+    def add_genre_page(self):
+        genre_widget = GenreScreen(self.app_controller)
+        self.add_page(genre_widget)
 
     def add_search_page(self):
         search_widget = SearchScreen(self.app_controller)
