@@ -13,7 +13,7 @@ def search_artists(artist_name):
     return results # Returns a list of matching artist data (id, name, subscribers, etc.)
 
 
-# Function that get artist songs.
+# Function that get artist info and top songs.
 def get_artist_songs(artist_name, limit=10):
     artists = search_artists(artist_name)
     if not artists:
@@ -26,22 +26,43 @@ def get_artist_songs(artist_name, limit=10):
         print("No browseId found for artist.")
         return None
 
+    # Fetch full artist data
     artist_data = ytmusic.get_artist(artist_browse_id)
-    songs = artist_data.get("songs", {}).get("results", [])
-    if not songs:
-        print("No songs found for this artist.")
-        return None
 
-    return [
-        {
-            "title": song["title"],
-            "artist": song["artists"][0]["name"],
-            "album": song.get("album", {}).get("name", "Unknown"),
-            "videoId": song.get("videoId"),
-            "thumbnails": song.get("thumbnails", [{}])[-1].get("url")
-        }
-        for song in songs[:limit]
-    ]
+    # Get top songs
+    top_songs_section = (
+        artist_data.get("songs", {}).get("results")
+        or artist_data.get("topSongs", {}).get("results")
+    )
+
+    # If the API returns a playlist instead of song results
+    if not top_songs_section:
+        playlist_id = artist_data.get("songs", {}).get("playlistId")
+        if playlist_id:
+            playlist = ytmusic.get_playlist(playlist_id, limit=limit)
+            top_songs_section = playlist.get("tracks", [])
+        else:
+            print("No top songs available for this artist.")
+            return None
+
+    description = artist_data.get("description", "No description available.")
+    artist_image = artist_data.get("thumbnails", [{}])[-1].get("url", "No image available.")
+
+    return {
+        "artist": artist["artist"],
+        "description": description,
+        "image": artist_image,
+        "songs": [
+            {
+                "title": song.get("title"),
+                "artist": song.get("artists", [{}])[0].get("name", "Unknown"),
+                "album": song.get("album", {}).get("name", "Unknown"),
+                "videoId": song.get("videoId"),
+                "thumbnails": song.get("thumbnails", [{}])[-1].get("url")
+            }
+            for song in top_songs_section[:limit]
+        ]
+    }
 
 
 # Function that search for songs by title
@@ -285,7 +306,7 @@ def get_genre_songs(params=None):
 
 # Example Test Run ===
 if __name__ == "__main__":
-    print(get_playlist('RDCLAK5uy_nIawIGq1WuKLBwtCIIcCh3WRwh-u21efk'))
+    # print(get_playlist('RDCLAK5uy_nIawIGq1WuKLBwtCIIcCh3WRwh-u21efk'))
     '''
     print("\n=== Recommended Songs ===")
     recommended = get_recommended_songs()
@@ -304,13 +325,16 @@ if __name__ == "__main__":
     if top_artists:
         for artist in top_artists:
             print(f"{artist['rank']}. {artist['name']} {artist['thumbnails']}")
-
-    print("\n=== Search Artist Example ===")
-    artist_songs = get_artist_songs("Taylor Swift")
-    if artist_songs:
-        for idx, s in enumerate(artist_songs, start=1):
-            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
 '''
+    print("\n=== Search Artist Example ===")
+    artist_info = get_artist_songs("Rick Astley")
+    if artist_info:
+        print(f"\nArtist: {artist_info['artist']}")
+        print(f"Description: {artist_info['description']}\n")
+        print(artist_info["image"])
+        for idx, s in enumerate(artist_info["songs"], start=1):
+            print(f"{idx}. {s['title']} - {s['artist']} ({s['album']}) {s['thumbnails']}")
+
     '''
     print("\n=== Search Song Example ===")
     song_results = get_song_titles("Blinding Lights")
