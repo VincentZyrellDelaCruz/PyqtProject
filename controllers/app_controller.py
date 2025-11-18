@@ -7,6 +7,7 @@ from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
 from screens.main_screen import MainScreen
+from screens.playlist_screen import PlaylistScreen
 from screens.music_player import MusicPlayer
 from screens.apionly_music_player import ApiMusicPlayer
 import config, os
@@ -121,6 +122,23 @@ class AppController:
             # Show it
             self.main.ui.page_label.setText('ARTIST')
             self.main.ui.home_stack.setCurrentIndex(7)
+
+    def goto_playlist(self, browse_id, image):
+        if self.main and hasattr(self.main, "ui"):
+
+            # If a Playlist page already exists at index 8 — remove it
+            if self.main.ui.home_stack.count() > 8:
+                old = self.main.ui.home_stack.widget(8)
+                self.main.ui.home_stack.removeWidget(old)
+                old.deleteLater()  # Avoid memory leaks
+
+            # Create and insert fresh PlaylistScreen
+            playlist_widget = PlaylistScreen(self, browse_id, image)
+            self.main.ui.home_stack.insertWidget(8, playlist_widget)
+
+            # Show it
+            self.main.ui.page_label.setText('PLAYLIST')
+            self.main.ui.home_stack.setCurrentIndex(8)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)

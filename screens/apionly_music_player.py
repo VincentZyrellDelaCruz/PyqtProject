@@ -26,6 +26,7 @@ class ApiMusicPlayer(QDialog):
         self.song_metadata = song_metadata
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_file_path = None
+        self.playlist = playlist
 
         # Playback options
         self.repeat = 0
@@ -83,6 +84,12 @@ class ApiMusicPlayer(QDialog):
 
     # Setup UI signals and default values
     def init_ui(self):
+        self.ui.lyrics_tab.hide()
+
+        if not self.playlist:
+            self.ui.playback_tab.hide()
+            self.ui.list_tab.hide()
+
         # Setup UI signals and default values
         self.ui.playButton.setIcon(QIcon(config.ICON_PATH + "play.svg"))
         self.ui.nextButton.setIcon(QIcon(config.ICON_PATH + "next.svg"))

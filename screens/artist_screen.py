@@ -4,7 +4,9 @@ from PyQt6.QtCore import Qt, QSize, QByteArray, QThreadPool
 from PyQt6.QtGui import QFont, QIcon, QPixmap
 import controllers.api_client as ytapi
 from controllers.async_loader import ImageLoader, load_placeholder_pixmap
-from controllers.api_client import get_artist_songs
+from controllers.api_client import get_artist_metadata
+from controllers.clickable import ClickableLabel
+
 
 class ArtistScreen(QWidget):
     def __init__(self, app_controller=None, artist=None):
@@ -18,8 +20,8 @@ class ArtistScreen(QWidget):
 
         self._placeholder = load_placeholder_pixmap()
 
-        # print(get_artist_songs(artist))
-        self.artist_metadata = get_artist_songs(artist)
+        # print(get_artist_metadata(artist))
+        self.artist_metadata = get_artist_metadata(artist)
 
         self.init_ui()
 
@@ -32,19 +34,14 @@ class ArtistScreen(QWidget):
         artist_panel = self.create_artist_panel()
         main_layout.addWidget(artist_panel)
 
-        # Results section
-        self.content_panel = self.create_content_panel()
+        self.two_row_section = self.create_two_row_section()
 
-        # Allow content panel to expand
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.two_row_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        main_layout.addWidget(self.content_panel)
+        main_layout.addWidget(self.two_row_section)
 
-        # ---- IMPORTANT FIX ----
-        # Give left panel small stretch, right panel large stretch
-        main_layout.setStretch(0, 1)  # artist panel
-        main_layout.setStretch(1, 4)  # content panel expands to fill white space
-        # ------------------------
+        main_layout.setStretch(0, 1)
+        main_layout.setStretch(1, 4)
 
     def create_artist_panel(self):
         panel = QFrame()
@@ -155,8 +152,147 @@ class ArtistScreen(QWidget):
 
         return panel
 
-    def create_content_panel(self):
-        # === OUTER WRAPPER FRAME ===
+    def create_two_row_section(self):
+        two_row_frame = QFrame()
+        two_row_frame.setStyleSheet("background: transparent;")
+
+        two_row_layout = QVBoxLayout(two_row_frame)
+        two_row_layout.setContentsMargins(0, 0, 0, 0)
+        two_row_layout.setSpacing(10)
+
+        self.album_panel = self.create_album_panel()
+        self.song_panel = self.create_song_panel()
+
+        # Allow song panel to expand
+        self.album_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.song_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        two_row_layout.addWidget(self.album_panel)
+        two_row_layout.addWidget(self.song_panel)
+
+        # Give songs more vertical space than albums
+        two_row_layout.setStretch(0, 1)
+        two_row_layout.setStretch(1, 2)
+
+        # === SCROLL AREA WRAPPER ===
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: #1E1E1E;
+                width: 8px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #1DB954;
+                border-radius: 4px;
+                min-height: 20px;
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0;
+                width: 0;
+            }
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        """)
+
+        scroll_area.setWidget(two_row_frame)
+
+        return scroll_area
+
+    def create_album_panel(self):
+        wrapper = QFrame()
+        wrapper.setStyleSheet("""
+            QFrame {
+                background-color: #1E1E1E;
+                border-radius: 12px;
+            }
+        """)
+
+        main_layout = QVBoxLayout(wrapper)
+        main_layout.setContentsMargins(18, 14, 18, 14)
+        main_layout.setSpacing(10)
+
+        header = QFrame()
+        header.setStyleSheet("background-color: transparent;")
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(18, 18, 18, 12)
+        header_layout.setSpacing(4)
+
+        title_lbl = QLabel("Albums")
+        title_lbl.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        title_lbl.setStyleSheet("color: white;")
+        header_layout.addWidget(title_lbl)
+
+        artist_name = self.artist_metadata.get('artist', 'Unknown Artist')
+        subtitle_lbl = QLabel(f"List of Albums Sang by {artist_name}")
+        subtitle_lbl.setFont(QFont("Segoe UI", 12))
+        subtitle_lbl.setStyleSheet("color: #AAAAAA;")
+        header_layout.addWidget(subtitle_lbl)
+
+        main_layout.addWidget(header)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:horizontal {
+                background: #1E1E1E;
+                width: 8px;
+                margin: 0px;
+            }
+            QScrollBar::handle:horizontal {
+                background: #1DB954;
+                border-radius: 4px;
+                min-height: 20px;
+            }
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal {
+                height: 0;
+                width: 0;
+            }
+            QScrollBar::add-page:horizontal,
+            QScrollBar::sub-page:horizontal {
+                background: none;
+            }
+        """)
+
+        scroll_content = QWidget()
+        scroll_content.setStyleSheet("background-color: transparent;")
+
+        scroll_layout = QHBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(18, 0, 18, 18)
+        scroll_layout.setSpacing(20)
+
+        albums = self.artist_metadata.get('albums', [])
+
+        for album in albums:
+            card = self.create_album_card(album)
+            # Fixed: add to the correct local scroll_layout (not self.scroll_layout)
+            scroll_layout.addWidget(card)
+
+        scroll_layout.addStretch()
+        scroll_content.setLayout(scroll_layout)
+        scroll_area.setWidget(scroll_content)
+        main_layout.addWidget(scroll_area)
+
+        return wrapper
+
+    def create_song_panel(self):
         wrapper = QFrame()
         wrapper.setStyleSheet("""
             QFrame {
@@ -169,26 +305,26 @@ class ArtistScreen(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # === HEADER AREA (same style hierarchy as genre_screen) ===
         header = QFrame()
         header.setStyleSheet("background-color: transparent;")
         header_layout = QVBoxLayout(header)
         header_layout.setContentsMargins(18, 18, 18, 12)
         header_layout.setSpacing(4)
 
-        title_lbl = QLabel("Songs")
+        title_lbl = QLabel("Top Songs")
         title_lbl.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title_lbl.setStyleSheet("color: white;")
         header_layout.addWidget(title_lbl)
 
-        subtitle_lbl = QLabel("Artist Songs")
+        # Fixed: single-string label for subtitle
+        artist_name = self.artist_metadata.get('artist', 'Unknown Artist')
+        subtitle_lbl = QLabel(f"Greatest Hit Songs by {artist_name}")
         subtitle_lbl.setFont(QFont("Segoe UI", 12))
         subtitle_lbl.setStyleSheet("color: #AAAAAA;")
         header_layout.addWidget(subtitle_lbl)
 
         main_layout.addWidget(header)
 
-        # === SCROLL AREA (matches genre_screen hierarchy) ===
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -199,7 +335,6 @@ class ArtistScreen(QWidget):
             }
         """)
 
-        # === INNER SCROLL CONTENT ===
         scroll_content = QWidget()
         scroll_content.setStyleSheet("background-color: transparent;")
 
@@ -207,8 +342,9 @@ class ArtistScreen(QWidget):
         self.scroll_layout.setContentsMargins(18, 0, 18, 18)
         self.scroll_layout.setSpacing(12)
 
-        # Populate songs (UI only)
-        for song in self.artist_metadata.get("songs", []):
+        songs = self.artist_metadata.get('songs', [])
+
+        for song in songs:
             item = self.create_song_item(song)
             self.scroll_layout.addWidget(item)
 
@@ -300,6 +436,57 @@ class ArtistScreen(QWidget):
 
         return song_widget
 
+    def create_album_card(self, album):
+        card = QFrame()
+        card.setFixedSize(140, 190)
+        card.setStyleSheet("""
+            QFrame {
+                background-color: #2A2A2A;
+                border-radius: 10px;
+            }
+            QFrame:hover {
+                background-color: #333333;
+            }
+        """)
+
+        vbox = QVBoxLayout(card)
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(8)
+        vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Thumbnail
+        img_label = QLabel()
+        img_label.setFixedSize(140, 140)
+        img_label.setStyleSheet("border-radius: 10px; background-color: #444;")
+        img_label.setPixmap(self._placeholder.scaled(140, 140,
+                                                     Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                                                     Qt.TransformationMode.SmoothTransformation))
+
+        vbox.addWidget(img_label)
+
+        # Title
+        title_label = ClickableLabel(album.get("title", "Unknown"))
+        title_label.setWordWrap(True)
+        title_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        title_label.setStyleSheet("color: white;")
+        vbox.addWidget(title_label)
+
+        # Artist / Year
+        year_label = ClickableLabel(album.get("year", "Unknown"))
+        year_label.setFont(QFont("Segoe UI", 9))
+        year_label.setStyleSheet("color: #BBBBBB;")
+        vbox.addWidget(year_label)
+
+        url = album.get("thumbnails", "")
+        if url:
+            self._async_load_card_image(url, img_label)
+
+        browseId = album.get("browseId", "")
+        title_label.clicked.connect(lambda: self.app_controller.goto_playlist(browseId, url))
+
+        return card
+
+    # ASYNC FUNCTIONS
     # Async load for artist image (larger, same logic as thumbnails)
     def _async_load_artist_image(self, url: str, label: QLabel, size: int = 200):
         loader = ImageLoader(url)
@@ -328,6 +515,20 @@ class ArtistScreen(QWidget):
         loader.signals.finished.connect(on_finished)
         QThreadPool.globalInstance().start(loader)
 
+    def _async_load_card_image(self, url: str, label: QLabel):
+        def on_finished(img_url: str, data: QByteArray):
+            if img_url != url or data.isEmpty():
+                return
+            pix = QPixmap()
+            pix.loadFromData(data)
+            pix = pix.scaled(140, 140, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                             Qt.TransformationMode.SmoothTransformation)
+            label.setPixmap(pix)
+
+        loader = ImageLoader(url)
+        loader.signals.finished.connect(on_finished)
+        QThreadPool.globalInstance().start(loader)
+
     def _async_load_icon(self, url: str, label: QLabel):
         loader = ImageLoader(url)
         self.active_loaders.append(loader)  # Track it
@@ -340,7 +541,7 @@ class ArtistScreen(QWidget):
             if img_url != url or data.isEmpty():
                 return
 
-            # Safety: if label was deleted, skip
+            # if label was deleted, skip
             if label is None or not label.parent():
                 return
 
