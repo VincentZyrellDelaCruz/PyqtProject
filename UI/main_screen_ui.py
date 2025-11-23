@@ -486,6 +486,46 @@ class Ui_MainWindow(object):
         self.movie_tab_group.addButton(self.tab_movie_genre)
         self.movie_tab_group.addButton(self.tab_movie_search)
 
+        # GAME TABS
+        self.tab_game_home = QtWidgets.QPushButton(parent=self.top_tabs)
+        self.tab_game_home.setMinimumSize(QtCore.QSize(120, 40))
+        self.tab_game_home.setStyleSheet(
+            "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
+            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+        self.tab_game_home.setText("Home")
+        self.tab_game_home.setCheckable(True)
+        self.tab_game_home.setVisible(False)
+        self.tab_game_home.setObjectName("tab_game_home")
+        self.tabs_layout.addWidget(self.tab_game_home)
+
+        self.tab_game_genre = QtWidgets.QPushButton(parent=self.top_tabs)
+        self.tab_game_genre.setMinimumSize(QtCore.QSize(140, 40))
+        self.tab_game_genre.setStyleSheet(
+            "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
+            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+        self.tab_game_genre.setText("TV Shows")
+        self.tab_game_genre.setCheckable(True)
+        self.tab_game_genre.setVisible(False)
+        self.tab_game_genre.setObjectName("tab_game_genre")
+        self.tabs_layout.addWidget(self.tab_game_genre)
+
+        self.tab_game_search = QtWidgets.QPushButton(parent=self.top_tabs)
+        self.tab_game_search.setMinimumSize(QtCore.QSize(120, 40))
+        self.tab_game_search.setStyleSheet(
+            "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
+            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+        self.tab_game_search.setText("Search")
+        self.tab_game_search.setCheckable(True)
+        self.tab_game_search.setVisible(False)
+        self.tab_game_search.setObjectName("tab_game_search")
+        self.tabs_layout.addWidget(self.tab_game_search)
+
+        self.game_tab_group = QtWidgets.QButtonGroup()
+        self.game_tab_group.setExclusive(True)
+        self.game_tab_group.addButton(self.tab_game_home)
+        self.game_tab_group.addButton(self.tab_game_genre)
+        self.game_tab_group.addButton(self.tab_game_search)
+
         spacer_tabs = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding,
                                             QtWidgets.QSizePolicy.Policy.Minimum)
         self.tabs_layout.addItem(spacer_tabs)

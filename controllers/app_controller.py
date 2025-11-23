@@ -147,24 +147,32 @@ class AppController:
     def switch_to_music(self):
         self.main.ui.home_stack.setCurrentIndex(0)
         self.main.ui.top_tabs.setVisible(True)
+
         # Show music tabs
         self.main.ui.tab_home.setVisible(True)
         self.main.ui.tab_genre.setVisible(True)
         self.main.ui.tab_search.setVisible(True)
         self.main.ui.tab_local.setVisible(True)
+
         # Hide movie tabs
         self.main.ui.tab_movie_home.setVisible(False)
         self.main.ui.tab_tvshows.setVisible(False)
         self.main.ui.tab_movies.setVisible(False)
         self.main.ui.tab_movie_genre.setVisible(False)
         self.main.ui.tab_movie_search.setVisible(False)
+
+        self.main.ui.tab_game_home.setVisible(False)
+        self.main.ui.tab_game_genre.setVisible(False)
+        self.main.ui.tab_game_search.setVisible(False)
+
         self.main.ui.tab_home.setChecked(True)
+        self.main.ui.page_label.setText("MUSIC")
 
     def switch_to_movies(self):
         self.main.ui.home_stack.setCurrentIndex(1)
         self.main.ui.top_tabs.setVisible(True)
 
-        # Hide music tabs
+        # Hide movie tabs
         self.main.ui.tab_home.setVisible(False)
         self.main.ui.tab_genre.setVisible(False)
         self.main.ui.tab_search.setVisible(False)
@@ -177,18 +185,41 @@ class AppController:
         self.main.ui.tab_movie_genre.setVisible(True)
         self.main.ui.tab_movie_search.setVisible(True)
 
+        self.main.ui.tab_game_home.setVisible(False)
+        self.main.ui.tab_game_genre.setVisible(False)
+        self.main.ui.tab_game_search.setVisible(False)
+
         # Ensure only one movie tab is checked (Home by default)
         self.main.ui.tab_movie_home.setChecked(True)
         self.main.ui.page_label.setText("MOVIES")
 
     def switch_to_games(self):
         self.main.ui.home_stack.setCurrentIndex(2)
-        self.main.ui.top_tabs.setVisible(False)  # or True later when games tabs exist
+        self.main.ui.top_tabs.setVisible(True)
+
+        # Hide game tabs
+        self.main.ui.tab_home.setVisible(False)
+        self.main.ui.tab_genre.setVisible(False)
+        self.main.ui.tab_search.setVisible(False)
+        self.main.ui.tab_local.setVisible(False)
+
+        # Show game tabs
+        self.main.ui.tab_movie_home.setVisible(False)
+        self.main.ui.tab_tvshows.setVisible(False)
+        self.main.ui.tab_movies.setVisible(False)
+        self.main.ui.tab_movie_genre.setVisible(False)
+        self.main.ui.tab_movie_search.setVisible(False)
+
+        self.main.ui.tab_game_home.setVisible(True)
+        self.main.ui.tab_game_genre.setVisible(True)
+        self.main.ui.tab_game_search.setVisible(True)
+
+        # Ensure only one game tab is checked (Home by default)
+        self.main.ui.tab_movie_home.setChecked(True)
         self.main.ui.page_label.setText("GAMES")
 
     def switch_to_movie_page(self, index):
         self.main.ui.movies_stack.setCurrentIndex(index)
-        self.main.ui.page_label.setText(["MOVIES HOME", "TV SHOWS", "MOVIES", "MOVIE GENRE", "MOVIE SEARCH"][index])
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)
