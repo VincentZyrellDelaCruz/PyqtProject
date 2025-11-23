@@ -78,67 +78,117 @@ class AppController:
 
     def goto_local(self):
         if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('LOCAL PLAY')
-            self.main.ui.home_stack.setCurrentIndex(1)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.home_stack.setCurrentIndex(0)
+            self.main.ui.music_stack.setCurrentIndex(0)
+            self.main.ui.tab_local.setChecked(True)
 
     def goto_home(self):
         if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('HOME')
-            self.main.ui.home_stack.setCurrentIndex(2)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.home_stack.setCurrentIndex(0)
+            self.main.ui.music_stack.setCurrentIndex(1)
+            self.main.ui.tab_home.setChecked(True)
 
     def goto_genre(self):
         if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('GENRE')
-            self.main.ui.home_stack.setCurrentIndex(3)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.home_stack.setCurrentIndex(0)
+            self.main.ui.music_stack.setCurrentIndex(2)
+            self.main.ui.tab_genre.setChecked(True)
 
     def goto_search(self):
         if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('SEARCH')
-            self.main.ui.home_stack.setCurrentIndex(4)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.home_stack.setCurrentIndex(0)
+            self.main.ui.music_stack.setCurrentIndex(3)
+            self.main.ui.tab_search.setChecked(True)
 
     def goto_about(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('ABOUT')
             self.main.ui.home_stack.setCurrentIndex(5)
+            self.main.ui.top_tabs.setVisible(False)
 
     def goto_profile(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('USER PROFILE')
             self.main.ui.home_stack.setCurrentIndex(6)
+            self.main.ui.top_tabs.setVisible(False)
 
     def goto_artist(self, artist):
         if self.main and hasattr(self.main, "ui"):
-
-            # If an Artist page already exists at index 7 — remove it
-            if self.main.ui.home_stack.count() > 7:
-                old = self.main.ui.home_stack.widget(7)
-                self.main.ui.home_stack.removeWidget(old)
-                old.deleteLater()  # <-- prevents ghosts & leftover async loaders
-
-            # Create and insert fresh ArtistScreen
+            music_stack = self.main.ui.music_stack
+            if music_stack.count() > 4:
+                old = music_stack.widget(4)
+                music_stack.removeWidget(old)
+                old.deleteLater()
             artist_widget = ArtistScreen(self, artist)
-            self.main.ui.home_stack.insertWidget(7, artist_widget)
-
-            # Show it
-            self.main.ui.page_label.setText('ARTIST')
-            self.main.ui.home_stack.setCurrentIndex(7)
+            music_stack.insertWidget(4, artist_widget)
+            self.main.ui.home_stack.setCurrentIndex(0)
+            music_stack.setCurrentIndex(4)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.top_tabs.setVisible(True)
 
     def goto_playlist(self, browse_id, image):
         if self.main and hasattr(self.main, "ui"):
-
-            # If a Playlist page already exists at index 8 — remove it
-            if self.main.ui.home_stack.count() > 8:
-                old = self.main.ui.home_stack.widget(8)
-                self.main.ui.home_stack.removeWidget(old)
-                old.deleteLater()  # Avoid memory leaks
-
-            # Create and insert fresh PlaylistScreen
+            music_stack = self.main.ui.music_stack
+            if music_stack.count() > 5:
+                old = music_stack.widget(5)
+                music_stack.removeWidget(old)
+                old.deleteLater()
             playlist_widget = PlaylistScreen(self, browse_id, image)
-            self.main.ui.home_stack.insertWidget(8, playlist_widget)
+            music_stack.insertWidget(5, playlist_widget)
+            self.main.ui.home_stack.setCurrentIndex(0)
+            music_stack.setCurrentIndex(5)
+            self.main.ui.page_label.setText('MUSIC')
+            self.main.ui.top_tabs.setVisible(True)
 
-            # Show it
-            self.main.ui.page_label.setText('PLAYLIST')
-            self.main.ui.home_stack.setCurrentIndex(8)
+    def switch_to_music(self):
+        self.main.ui.home_stack.setCurrentIndex(0)
+        self.main.ui.top_tabs.setVisible(True)
+        # Show music tabs
+        self.main.ui.tab_home.setVisible(True)
+        self.main.ui.tab_genre.setVisible(True)
+        self.main.ui.tab_search.setVisible(True)
+        self.main.ui.tab_local.setVisible(True)
+        # Hide movie tabs
+        self.main.ui.tab_movie_home.setVisible(False)
+        self.main.ui.tab_tvshows.setVisible(False)
+        self.main.ui.tab_movies.setVisible(False)
+        self.main.ui.tab_movie_genre.setVisible(False)
+        self.main.ui.tab_movie_search.setVisible(False)
+        self.main.ui.tab_home.setChecked(True)
+
+    def switch_to_movies(self):
+        self.main.ui.home_stack.setCurrentIndex(1)
+        self.main.ui.top_tabs.setVisible(True)
+
+        # Hide music tabs
+        self.main.ui.tab_home.setVisible(False)
+        self.main.ui.tab_genre.setVisible(False)
+        self.main.ui.tab_search.setVisible(False)
+        self.main.ui.tab_local.setVisible(False)
+
+        # Show movie tabs
+        self.main.ui.tab_movie_home.setVisible(True)
+        self.main.ui.tab_tvshows.setVisible(True)
+        self.main.ui.tab_movies.setVisible(True)
+        self.main.ui.tab_movie_genre.setVisible(True)
+        self.main.ui.tab_movie_search.setVisible(True)
+
+        # Ensure only one movie tab is checked (Home by default)
+        self.main.ui.tab_movie_home.setChecked(True)
+        self.main.ui.page_label.setText("MOVIES")
+
+    def switch_to_games(self):
+        self.main.ui.home_stack.setCurrentIndex(2)
+        self.main.ui.top_tabs.setVisible(False)  # or True later when games tabs exist
+        self.main.ui.page_label.setText("GAMES")
+
+    def switch_to_movie_page(self, index):
+        self.main.ui.movies_stack.setCurrentIndex(index)
+        self.main.ui.page_label.setText(["MOVIES HOME", "TV SHOWS", "MOVIES", "MOVIE GENRE", "MOVIE SEARCH"][index])
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)

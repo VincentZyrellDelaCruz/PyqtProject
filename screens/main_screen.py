@@ -18,16 +18,12 @@ class MainScreen(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
         self.button_group = QButtonGroup(self)
-
         self.local_playlist = sorted(os.listdir(config.LOCAL_MUSIC_PATH))
-
         self.app_controller = app_controller
         self.init_ui()
         self.connect_signals()
         self.display_local_playlist()
-
         self.add_home_page()
         self.add_genre_page()
         self.add_search_page()
@@ -35,27 +31,21 @@ class MainScreen(QMainWindow):
         self.add_profile_page()
 
     def init_ui(self):
-        pixmap1 = QPixmap(config.IMAGE_PATH + 'μsic_sync-removebg.png').scaled(
-            150, 150)
+        pixmap1 = QPixmap(config.IMAGE_PATH + 'μsic_sync-removebg.png').scaled(150, 150)
         self.ui.logo_1.setPixmap(pixmap1)
-
-        pixmap2 = QPixmap(config.IMAGE_PATH + 'μsic_sync_with_name-removebg.png').scaled(
-            200, 100)
+        pixmap2 = QPixmap(config.IMAGE_PATH + 'μsic_sync_with_name-removebg.png').scaled(200, 100)
         self.ui.logo_2.setPixmap(pixmap2)
 
-        self.ui.home1.setIcon(QIcon(config.ICON_PATH + 'music.png'))
-        self.ui.home2.setIcon(QIcon(config.ICON_PATH + 'music.png'))
-        self.ui.home1.setChecked(True)
-        self.ui.home2.setChecked(True)
+        self.ui.burger_icon.setIcon(QIcon(config.ICON_PATH + 'burger-bar.png'))
 
-        self.ui.genre1.setIcon(QIcon(config.ICON_PATH + 'genre.svg'))
-        self.ui.genre2.setIcon(QIcon(config.ICON_PATH + 'genre.svg'))
+        self.ui.music_main.setIcon(QIcon(config.ICON_PATH + 'music.png'))
+        self.ui.music_main_text.setIcon(QIcon(config.ICON_PATH + 'music.png'))
 
-        self.ui.search1.setIcon(QIcon(config.ICON_PATH + 'search.svg'))
-        self.ui.search2.setIcon(QIcon(config.ICON_PATH + 'search.svg'))
+        self.ui.movies_main.setIcon(QIcon(config.ICON_PATH + 'movie.svg'))
+        self.ui.movies_main_text.setIcon(QIcon(config.ICON_PATH + 'movie.svg'))
 
-        self.ui.local1.setIcon(QIcon(config.ICON_PATH + 'local-play-button.png'))
-        self.ui.local2.setIcon(QIcon(config.ICON_PATH + 'local-play-button.png'))
+        self.ui.games_main.setIcon(QIcon(config.ICON_PATH + 'game.svg'))
+        self.ui.games_main_text.setIcon(QIcon(config.ICON_PATH + 'game.svg'))
 
         self.ui.about1.setIcon(QIcon(config.ICON_PATH + 'info.png'))
         self.ui.about2.setIcon(QIcon(config.ICON_PATH + 'info.png'))
@@ -63,117 +53,102 @@ class MainScreen(QMainWindow):
         self.ui.user1.setIcon(QIcon(config.ICON_PATH + 'user.png'))
         self.ui.user2.setIcon(QIcon(config.ICON_PATH + 'user.png'))
 
-        self.ui.burger_icon.setIcon(QIcon(config.ICON_PATH + 'burger-bar.png'))
-
         self.ui.widget_icontexts.setHidden(True)
 
-        self.button_group.setExclusive(True)
+        self.tab_group = QButtonGroup(self)
+        self.tab_group.setExclusive(True)
+        self.tab_group.addButton(self.ui.tab_home)
+        self.tab_group.addButton(self.ui.tab_genre)
+        self.tab_group.addButton(self.ui.tab_search)
+        self.tab_group.addButton(self.ui.tab_local)
+
+        self.ui.music_main.setChecked(True)
+        self.ui.music_main_text.setChecked(True)
+        self.ui.home_stack.setCurrentIndex(0)
+        self.ui.top_tabs.setVisible(True)
 
     def connect_signals(self):
-        self.ui.local1.clicked.connect(self.app_controller.goto_local)
-        self.ui.local2.clicked.connect(self.app_controller.goto_local)
+        # Music tabs
+        self.ui.tab_home.clicked.connect(self.app_controller.goto_home)
+        self.ui.tab_genre.clicked.connect(self.app_controller.goto_genre)
+        self.ui.tab_search.clicked.connect(self.app_controller.goto_search)
+        self.ui.tab_local.clicked.connect(self.app_controller.goto_local)
 
-        self.ui.home1.clicked.connect(self.app_controller.goto_home)
-        self.ui.home2.clicked.connect(self.app_controller.goto_home)
-
-        self.ui.genre1.clicked.connect(self.app_controller.goto_genre)
-        self.ui.genre2.clicked.connect(self.app_controller.goto_genre)
-
-        self.ui.search1.clicked.connect(self.app_controller.goto_search)
-        self.ui.search2.clicked.connect(self.app_controller.goto_search)
+        # Movie tabs (connect later in switch_to_movies)
+        self.ui.tab_movie_home.clicked.connect(lambda: self.app_controller.switch_to_movie_page(0))
+        self.ui.tab_tvshows.clicked.connect(lambda: self.app_controller.switch_to_movie_page(1))
+        self.ui.tab_movies.clicked.connect(lambda: self.app_controller.switch_to_movie_page(2))
+        self.ui.tab_movie_genre.clicked.connect(lambda: self.app_controller.switch_to_movie_page(3))
+        self.ui.tab_movie_search.clicked.connect(lambda: self.app_controller.switch_to_movie_page(4))
 
         self.ui.about1.clicked.connect(self.app_controller.goto_about)
         self.ui.about2.clicked.connect(self.app_controller.goto_about)
-
         self.ui.user1.clicked.connect(self.app_controller.goto_profile)
         self.ui.user2.clicked.connect(self.app_controller.goto_profile)
 
-    def add_page(self, page_widget):
-        # Make it expand properly to fill available space
+        # Sidebar section switching
+        self.ui.music_main.clicked.connect(self.app_controller.switch_to_music)
+        self.ui.music_main_text.clicked.connect(self.app_controller.switch_to_music)
+        self.ui.movies_main.clicked.connect(self.app_controller.switch_to_movies)
+        self.ui.movies_main_text.clicked.connect(self.app_controller.switch_to_movies)
+        self.ui.games_main.clicked.connect(self.app_controller.switch_to_games)
+        self.ui.games_main_text.clicked.connect(self.app_controller.switch_to_games)
+
+        self.ui.about1.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
+        self.ui.about2.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
+        self.ui.user1.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
+        self.ui.user2.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
+
+    def add_page(self, page_widget, stack):
         page_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         page_widget.setMinimumSize(0, 0)
         page_widget.setMaximumSize(16777215, 16777215)
-
-        # Wrap in a scroll area just like profile page
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll_area.setWidget(page_widget)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        # Style the scrollbar (reuse same styling as profile)
         scroll_area.setStyleSheet("""
-            QScrollArea {
-                border: none;
-                background-color: #F5F5F5;
-            }
-            QScrollBar:vertical {
-                border: none;
-                background: #E0E0E0;
-                width: 10px;
-                border-radius: 5px;
-                margin: 2px;
-            }
-            QScrollBar::handle:vertical {
-                background: #71C562;
-                border-radius: 5px;
-                min-height: 40px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #5fb052;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
+            QScrollArea { border: none; background-color: #F5F5F5; }
+            QScrollBar:vertical { border: none; background: #E0E0E0; width: 10px; border-radius: 5px; margin: 2px; }
+            QScrollBar::handle:vertical { background: #71C562; border-radius: 5px; min-height: 40px; }
+            QScrollBar::handle:vertical:hover { background: #5fb052; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
         """)
-
-        # Add to stacked widget (home_stack). Keep track of its index for navigation.
-        self.home_widget_index = self.ui.home_stack.addWidget(scroll_area)
-        # print(self.home_widget_index)
+        stack_no = stack.addWidget(scroll_area)
+        print(stack_no)
 
     def add_home_page(self):
         home_widget = HomeScreen(self.app_controller)
-        self.add_page(home_widget)
+        self.add_page(home_widget, self.ui.music_stack)
 
     def add_genre_page(self):
         genre_widget = GenreScreen(self.app_controller)
-        self.add_page(genre_widget)
+        self.add_page(genre_widget, self.ui.music_stack)
 
     def add_search_page(self):
         search_widget = SearchScreen(self.app_controller)
-        self.add_page(search_widget)
+        self.add_page(search_widget, self.ui.music_stack)
 
     def add_about_page(self):
-        # Create about screen widget
         about_widget = AboutScreen(self.app_controller)
-        self.add_page(about_widget)
+        self.add_page(about_widget, self.ui.home_stack)
 
     def add_profile_page(self):
-        # Create profile screen widget
         profile_widget = ProfileScreen(self.app_controller)
-        self.add_page(profile_widget)
+        self.add_page(profile_widget, self.ui.home_stack)
 
     def display_local_playlist(self):
         if self.local_playlist is None:
             return
-
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            QScrollArea {
-                border: none;
-            }
-            QScrollArea QWidget {
-                background-color: #555;
-            }
-        """)
-
+        scroll_area.setStyleSheet("QScrollArea { border: none; } QScrollArea QWidget { background-color: #555; }")
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(6)
-
         for i, song_title in enumerate(self.local_playlist):
             song_btn = QPushButton(f"{' '*3}{song_title.replace('.mp3', '')}")
             song_btn.setFont(QFont('Arial', 15))
@@ -181,29 +156,13 @@ class MainScreen(QMainWindow):
             song_btn.setIcon(QIcon(metadata.get_embedded_image(config.LOCAL_MUSIC_PATH + song_title, square=True)))
             song_btn.setIconSize(QSize(64, 64))
             song_btn.setStyleSheet('''
-                QPushButton { 
-                    color: #fff; 
-                    text-align: left; 
-                    background-color: transparent; 
-                    padding: 8px 10px;
-                    border: none;
-                    border-radius: 5px; 
-                }
-                QPushButton:hover {
-                    background-color: #3a3a3a;
-                }
-                QPushButton:checked {
-                    background-color: #1DB954;
-                }
-                QIcon {
-                    border-radius: 5px;
-                }
+                QPushButton { color: #fff; text-align: left; background-color: transparent; padding: 8px 10px; border: none; border-radius: 5px; }
+                QPushButton:hover { background-color: #3a3a3a; }
+                QPushButton:checked { background-color: #1DB954; }
+                QIcon { border-radius: 5px; }
             ''')
             song_btn.clicked.connect(partial(self.app_controller.open_music_player, song_title))
-
             self.button_group.addButton(song_btn, id=i)
             content_layout.addWidget(song_btn)
-
         scroll_area.setWidget(content_widget)
-        self.ui.list_layout.addWidget(scroll_area)
-
+        self.ui.music_stack.addWidget(scroll_area)
