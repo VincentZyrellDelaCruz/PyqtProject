@@ -124,7 +124,8 @@ def fetch_games_by_genre(api_key=API_KEY, genre_slug=None, page_size=10):
             "name": g.get("name"),
             "released": g.get("released"),
             "rating": g.get("rating"),
-            "platforms": [p["platform"]["name"] for p in g.get("platforms", [])]
+            "platforms": [p["platform"]["name"] for p in g.get("platforms", [])],
+            "background_image": g.get("background_image")
         })
     return games
 
@@ -158,12 +159,13 @@ if __name__ == "__main__":
         print(f"   Released: {game['released']}")
         print(f"   Image: {game['background_image']}")
     '''
+    '''
     search_results = search_games(api_key=API_KEY, query="Elden Ring")
     for idx, game in enumerate(search_results, start=1):
         print(f"{idx}. {game['name']} (Rating: {game['rating']})")
         print(f"   Released: {game['released']}")
         print(f"   Image: {game['background_image']}")
-    '''
+    
     top_games = fetch_yearly_top_games(year=2025)
     for idx, game in enumerate(top_games, start=1):
         print(f"{idx}. {game['name']} (Rating: {game['rating']})")
@@ -181,12 +183,12 @@ if __name__ == "__main__":
     genres = fetch_genres(api_key=API_KEY)
     for idx, genre in enumerate(genres, start=1):
         print(f"{idx}. {genre['name']} (Games Count: {genre['games_count']})")
-
+    '''
     # 4. Get games from a specific genre
     action_games = fetch_games_by_genre(api_key=API_KEY, genre_slug="action")
     for idx, game in enumerate(action_games, start=1):
-        print(f"{idx}. {game['name']} (Rating: {game['rating']})")
-    
+        print(f"{idx}. {game['name']} (Rating: {game['rating']}) {game['background_image']}")
+    '''
     game_info = fetch_game_info(api_key=API_KEY, game_id=3498)  # Example: GTA V
     print(f"Title: {game_info['name']}")
     print(f"Released: {game_info['released']}")

@@ -3,19 +3,11 @@ from PyQt6.QtCore import Qt, QSize, QByteArray, QThreadPool, QObject, pyqtSignal
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 from controllers.clickable import ClickableLabel
 import os, config, requests
-from controllers.music_metadata import display_thumbnail
+from controllers.game_api_client import fetch_genres, fetch_games_by_genre
 from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 from typing import List
 
-GAME_GENRES = [
-    {'name': 'Action',   'color': 'blue', 'id': ''},
-    {'name': 'Adventure', 'color': 'black', 'id': ''},
-    {'name': 'JRPGs',  'color': 'yellow', 'id': ''},
-    {'name': 'Strategy',  'color': 'violet', 'id': ''},
-    {'name': 'Sports',  'color': 'red', 'id': ''},
-    {'name': 'Simulation',   'color': 'green', 'id': ''},
-    {'name': 'Shooter',   'color': 'green', 'id': ''},
-]
+GAME_GENRES = fetch_genres()
 
 class GameGenreScreen(QWidget):
     def __init__(self, app_controller=None):
@@ -115,95 +107,85 @@ class GameGenreScreen(QWidget):
                 border-radius: 12px;
             }
         """)
-
-        genre_games_frame.setMinimumHeight(1000)
+        genre_games_frame.setMinimumHeight(800)
+        genre_games_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         results_layout = QVBoxLayout(genre_games_frame)
         results_layout.setContentsMargins(18, 14, 18, 14)
-        results_layout.setSpacing(10)
+        results_layout.setSpacing(20)
 
-        # Header label for results
+        # Header
         self.results_label = QLabel()
         self.results_label.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         self.results_label.setStyleSheet("color: white;")
         results_layout.addWidget(self.results_label)
 
-        # Scrollable area for results
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
-                background: transparent;
-                border: none;
-            }
-        """)
+        # Scroll area with grid inside
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("background: transparent; border: none;")
 
-        # Inner content widget
+        # Grid container
         scroll_content = QWidget()
         scroll_content.setStyleSheet("background-color: transparent;")
-        self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_layout.setSpacing(10)
 
-        self.scroll_area.setWidget(scroll_content)
-        results_layout.addWidget(self.scroll_area)
+        from PyQt6.QtWidgets import QGridLayout
+        self.grid_layout = QGridLayout(scroll_content)
+        self.grid_layout.setContentsMargins(10, 10, 10, 10)
+        self.grid_layout.setHorizontalSpacing(24)
+        self.grid_layout.setVerticalSpacing(28)
 
-        self.handle_selected_genre(genre) # Initial load
+        scroll_area.setWidget(scroll_content)
+        results_layout.addWidget(scroll_area, stretch=1)  # Takes all available height
 
+        self.handle_selected_genre(genre)  # Initial load
         return genre_games_frame
 
     def handle_selected_genre(self, genre=None):
         if genre is None:
             return
 
-        self.results_label.setText(f"{genre['name']} Games")
+        self.results_label.setText(f"{genre.get('name')} Games")
 
-        # Cancels all pending image loads
+        # Cancel previous loaders
         for loader in self.active_loaders[:]:
             loader.cancel()
         self.active_loaders.clear()
 
-        scroll_content = QWidget()
-        scroll_content.setStyleSheet("background-color: transparent;")
-        content_layout = QVBoxLayout(scroll_content)
-        content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.setSpacing(10)
+        # Clear previous grid
+        while self.grid_layout.count():
+            item = self.grid_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
 
-        '''
         try:
-            playlist = ytapi.get_playlist(genre.get('id'))
-            songs = playlist.get('tracks', [])
+            games = fetch_games_by_genre(genre_slug=genre.get('slug'))
         except Exception as e:
-            print('Error fetching songs:', e)
-            songs = []
+            print('Error fetching games:', e)
+            games = []
 
-        if not songs:
-            placeholder = QLabel('No results found.')
-            placeholder.setFont(QFont('Segoe UI', 12))
-            placeholder.setStyleSheet('color: #BBBBBB;')
-            placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            content_layout.addWidget(placeholder)
+        if not games:
+            no_results = QLabel("No games found in this genre.")
+            no_results.setFont(QFont("Segoe UI", 14))
+            no_results.setStyleSheet("color: #BBBBBB;")
+            no_results.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.grid_layout.addWidget(no_results, 0, 0, 1, 3)  # Span 3 columns
         else:
-            for song in songs:
-                song_widget = self.create_song_item(song)
-                content_layout.addWidget(song_widget)
-        '''
-        content_layout.addStretch()
+            for index, game in enumerate(games):
+                card = self.create_game_card(game)
+                row = index // 3
+                col = index % 3
+                self.grid_layout.addWidget(card, row, col)
 
-        # Replace scroll widget safely
-        old_widget = self.scroll_area.widget()
-        if old_widget:
-            # Delay deletion to avoid race with pending events
-            old_widget.deleteLater()
-
-        self.scroll_area.setWidget(scroll_content)
+        # Push content to top
+        self.grid_layout.setRowStretch(self.grid_layout.rowCount(), 1)
 
     def create_genre_card(self, genre):
         card = QFrame()
         card.setFixedSize(180, 100)
         card.setStyleSheet(f"""
-            background-color: {genre['color']};
+            background-color: #092f94;
             border-radius: 10px;
         """)
 
@@ -211,8 +193,7 @@ class GameGenreScreen(QWidget):
         vbox.setContentsMargins(10, 10, 10, 10)
         vbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # KEEP REFERENCE — prevents PyQt from deleting it
-        title_label = ClickableLabel(genre['name'])
+        title_label = ClickableLabel(genre.get('name'))
         self.genre_labels.append(title_label)
 
         title_label.setWordWrap(True)
@@ -225,34 +206,122 @@ class GameGenreScreen(QWidget):
         vbox.addWidget(title_label)
         return card
 
-    def _async_load_icon(self, url: str, label: QLabel):
-        loader = ImageLoader(url)
-        self.active_loaders.append(loader)  # Track it
+    def create_game_card(self, game):
+        card = QFrame()
+        card.setFixedSize(250, 320)  # Wider and taller = more space
+        card.setCursor(Qt.CursorShape.PointingHandCursor)
+        card.setStyleSheet("""
+            QFrame {
+                background-color: #2D2D2D;
+                border-radius: 16px;
+                border: 1px solid #333;
+            }
+            QFrame:hover {
+                background-color: #383838;
+                border: 1px solid #555;
+            }
+        """)
 
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(12)
+
+        image_label = QLabel()
+        image_label.setFixedHeight(150)
+        image_label.setMinimumWidth(196)  # 220 - 12*2 margins
+        image_label.setStyleSheet("""
+            QLabel {
+                background-color: #1a1a1a;
+                border-radius: 12px;
+            }
+        """)
+        image_label.setScaledContents(True)  # This makes image fill the label completely
+
+        # Load image asynchronously (safe scaling)
+        if game.get("background_image"):
+            self._async_load_card_image(game["background_image"], image_label)
+        else:
+            placeholder = self._placeholder.scaled(
+                400, 400,  # High-res source
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            image_label.setPixmap(placeholder)
+
+        layout.addWidget(image_label)
+
+        title = QLabel(game["name"])
+        title.setWordWrap(True)
+        title.setFont(QFont("Segoe UI", 11, QFont.Weight.DemiBold))
+        title.setStyleSheet("color: white;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        # RATING
+        rating_layout = QHBoxLayout()
+        rating_layout.setSpacing(6)
+
+        star_lbl = QLabel("★")
+        star_lbl.setStyleSheet("color: #FFD700; font-size: 16px;")
+        rating_layout.addWidget(star_lbl)
+
+        rating_lbl = QLabel(f"{game.get('rating', 0):.1f}")
+        rating_lbl.setStyleSheet("color: #FFD700; font-size: 14px;")
+        rating_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Medium))
+        rating_layout.addWidget(rating_lbl)
+        rating_layout.addStretch()
+        layout.addLayout(rating_layout)
+
+        # VIEW BUTTON
+        view_btn = QPushButton("View")
+        view_btn.setFixedHeight(40)
+        view_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        view_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #092f94;
+                color: white;
+                border-radius: 10px;
+                padding: 8px;
+            }
+            QPushButton:hover   { background-color: #1177EE; }
+            QPushButton:pressed { background-color: #0055AA; }
+        """)
+        if self.app_controller:
+            view_btn.clicked.connect(lambda _, gid=game["id"]: self.app_controller.show_game_detail(gid))
+
+        layout.addWidget(view_btn)
+        layout.addStretch()
+
+        return card
+
+    def _async_load_card_image(self, url: str, label: QLabel):
         def on_finished(img_url: str, data: QByteArray):
-            # Remove from active list first
-            if loader in self.active_loaders:
-                self.active_loaders.remove(loader)
-
             if img_url != url or data.isEmpty():
-                return
-
-            # Safety: if label was deleted, skip
-            if label is None or not label.parent():
                 return
 
             pix = QPixmap()
             if not pix.loadFromData(data):
                 return
 
-            # Force 1:1 square
-            pix = pix.scaled(
-                48, 48,
-                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+            if pix.isNull():
+                return
+
+            scaled = pix.scaled(
+                156, 156,
+                Qt.AspectRatioMode.KeepAspectRatio,  # NOT ByExpanding!
                 Qt.TransformationMode.SmoothTransformation
             )
-            pix = pix.copy((pix.width() - 48) // 2, (pix.height() - 48) // 2, 48, 48)
-            label.setPixmap(pix)
 
+            # Center crop to exactly fill 156x156
+            if scaled.width() > scaled.height():
+                cropped = scaled.copy((scaled.width() - 156) // 2, 0, 156, 156)
+            elif scaled.height() > scaled.width():
+                cropped = scaled.copy(0, (scaled.height() - 156) // 2, 156, 156)
+            else:
+                cropped = scaled
+
+            label.setPixmap(cropped)
+
+        loader = ImageLoader(url)
         loader.signals.finished.connect(on_finished)
         QThreadPool.globalInstance().start(loader)
