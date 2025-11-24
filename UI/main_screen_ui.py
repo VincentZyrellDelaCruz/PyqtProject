@@ -400,7 +400,7 @@ class Ui_MainWindow(object):
         self.tab_genre.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_genre.setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
                                      "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
-        self.tab_genre.setText("Genre")
+        self.tab_genre.setText("Music Genre")
         self.tab_genre.setCheckable(True)
         self.tab_genre.setObjectName("tab_genre")
         self.tabs_layout.addWidget(self.tab_genre)
@@ -409,7 +409,7 @@ class Ui_MainWindow(object):
         self.tab_search.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_search.setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
                                       "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
-        self.tab_search.setText("Search")
+        self.tab_search.setText("Search Music")
         self.tab_search.setCheckable(True)
         self.tab_search.setObjectName("tab_search")
         self.tabs_layout.addWidget(self.tab_search)
@@ -503,7 +503,7 @@ class Ui_MainWindow(object):
         self.tab_game_genre.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
             "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
-        self.tab_game_genre.setText("TV Shows")
+        self.tab_game_genre.setText("Game Genres")
         self.tab_game_genre.setCheckable(True)
         self.tab_game_genre.setVisible(False)
         self.tab_game_genre.setObjectName("tab_game_genre")
@@ -514,7 +514,7 @@ class Ui_MainWindow(object):
         self.tab_game_search.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
             "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
-        self.tab_game_search.setText("Search")
+        self.tab_game_search.setText("Search Games")
         self.tab_game_search.setCheckable(True)
         self.tab_game_search.setVisible(False)
         self.tab_game_search.setObjectName("tab_game_search")

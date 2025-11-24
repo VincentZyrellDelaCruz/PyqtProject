@@ -148,6 +148,32 @@ class AppController:
         self.main.ui.home_stack.setCurrentIndex(0)
         self.main.ui.top_tabs.setVisible(True)
 
+        self.main.ui.widget_icons.setStyleSheet("QWidget {\n"
+            " background-color: #71C562;\n"
+            " color: white;\n"
+            "}\n"
+            "\n"
+            "QPushButton {\n"
+            " border: none;\n"
+            " height: 30px;\n"
+            " padding-top: 5px;\n"
+            " padding-bottom: 5px;\n"
+            "}")
+
+        self.main.ui.widget_icontexts.setStyleSheet("QWidget {\n"
+                                            " background-color: #71C562;\n"
+                                            " color: white;\n"
+                                            "}\n"
+                                            "QPushButton {\n"
+                                            " border: none;\n"
+                                            " Con height: 30px;\n"
+                                            " padding-top: 5px;\n"
+                                            " padding-bottom: 5px;\n"
+                                            "}")
+
+        self.main.ui.music_main.setChecked(True)
+        self.main.ui.music_main_text.setChecked(True)
+
         # Show music tabs
         self.main.ui.tab_home.setVisible(True)
         self.main.ui.tab_genre.setVisible(True)
@@ -171,6 +197,32 @@ class AppController:
     def switch_to_movies(self):
         self.main.ui.home_stack.setCurrentIndex(1)
         self.main.ui.top_tabs.setVisible(True)
+
+        self.main.ui.widget_icons.setStyleSheet("QWidget {\n"
+            " background-color: #E50914;\n"
+            " color: white;\n"
+            "}\n"
+            "\n"
+            "QPushButton {\n"
+            " border: none;\n"
+            " height: 30px;\n"
+            " padding-top: 5px;\n"
+            " padding-bottom: 5px;\n"
+            "}")
+
+        self.main.ui.widget_icontexts.setStyleSheet("QWidget {\n"
+                                            " background-color: #E50914;\n"
+                                            " color: white;\n"
+                                            "}\n"
+                                            "QPushButton {\n"
+                                            " border: none;\n"
+                                            " Con height: 30px;\n"
+                                            " padding-top: 5px;\n"
+                                            " padding-bottom: 5px;\n"
+                                            "}")
+
+        self.main.ui.movies_main.setChecked(True)
+        self.main.ui.movies_main_text.setChecked(True)
 
         # Hide movie tabs
         self.main.ui.tab_home.setVisible(False)
@@ -196,6 +248,32 @@ class AppController:
     def switch_to_games(self):
         self.main.ui.home_stack.setCurrentIndex(2)
         self.main.ui.top_tabs.setVisible(True)
+
+        self.main.ui.widget_icons.setStyleSheet("QWidget {\n"
+            " background-color: #092f94;\n"
+            " color: white;\n"
+            "}\n"
+            "\n"
+            "QPushButton {\n"
+            " border: none;\n"
+            " height: 30px;\n"
+            " padding-top: 5px;\n"
+            " padding-bottom: 5px;\n"
+            "}")
+
+        self.main.ui.widget_icontexts.setStyleSheet("QWidget {\n"
+                                            " background-color: #092f94;\n"
+                                            " color: white;\n"
+                                            "}\n"
+                                            "QPushButton {\n"
+                                            " border: none;\n"
+                                            " Con height: 30px;\n"
+                                            " padding-top: 5px;\n"
+                                            " padding-bottom: 5px;\n"
+                                            "}")
+
+        self.main.ui.games_main.setChecked(True)
+        self.main.ui.games_main_text.setChecked(True)
 
         # Hide game tabs
         self.main.ui.tab_home.setVisible(False)
