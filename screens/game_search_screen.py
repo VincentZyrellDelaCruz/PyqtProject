@@ -2,6 +2,7 @@ from typing import List
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QSizePolicy, QScrollArea, QLineEdit
 from PyQt6.QtCore import Qt, QSize, QByteArray, QThreadPool
 from PyQt6.QtGui import QFont, QIcon, QPixmap
+from controllers.game_api_client import search_games
 from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 
 class GameSearchScreen(QWidget):
@@ -49,7 +50,7 @@ class GameSearchScreen(QWidget):
 
         # QLineEdit for search input
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search for songs, artists, or albums...")
+        self.search_input.setPlaceholderText("Search for games...")
         self.search_input.setFont(QFont("Segoe UI", 12))
         self.search_input.setStyleSheet("""
             QLineEdit {
@@ -72,7 +73,7 @@ class GameSearchScreen(QWidget):
         self.search_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.search_button.setStyleSheet("""
             QPushButton {
-                background-color: #1DB954;
+                background-color: #092f94;
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -102,13 +103,14 @@ class GameSearchScreen(QWidget):
                 border-radius: 12px;
             }
         """)
-        frame.setVisible(False)  # hidden initially
+        frame.setVisible(False)
 
-        frame.setMinimumHeight(1000)
+        frame.setMinimumHeight(800)
+        frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         results_layout = QVBoxLayout(frame)
         results_layout.setContentsMargins(18, 14, 18, 14)
-        results_layout.setSpacing(10)
+        results_layout.setSpacing(20)  # ← increased spacing for grid
 
         # Header label for results
         results_label = QLabel("Search Results")
@@ -116,26 +118,25 @@ class GameSearchScreen(QWidget):
         results_label.setStyleSheet("color: white;")
         results_layout.addWidget(results_label)
 
-        # Scrollable area for results
+        # NEW: Scroll area + grid container
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            QScrollArea {
-                background: transparent;
-                border: none;
-            }
-        """)
+        scroll_area.setStyleSheet("background: transparent; border: none;")
 
-        # Inner content widget
+        # Container widget that holds the grid
         scroll_content = QWidget()
         scroll_content.setStyleSheet("background-color: transparent;")
-        self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_layout.setSpacing(10)
+
+        # ←←← 3-column grid layout
+        from PyQt6.QtWidgets import QGridLayout
+        self.grid_layout = QGridLayout(scroll_content)
+        self.grid_layout.setContentsMargins(10, 10, 10, 10)
+        self.grid_layout.setHorizontalSpacing(24)
+        self.grid_layout.setVerticalSpacing(28)
 
         scroll_area.setWidget(scroll_content)
-        results_layout.addWidget(scroll_area)
+        results_layout.addWidget(scroll_area, stretch=1)
 
         return frame
 
@@ -149,142 +150,156 @@ class GameSearchScreen(QWidget):
         if not self.results_frame.isVisible():
             self.results_frame.setVisible(True)
 
-        # Clear any previous results
-        while self.scroll_layout.count():
-            child = self.scroll_layout.takeAt(0)
+        # Clear previous results
+        while self.grid_layout.count():
+            child = self.grid_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
-        '''
         try:
-            songs = ytapi.get_song_titles(query)
+            games = search_games(query=query) or []
         except Exception as e:
-            print(f"Error fetching songs: {e}")
+            print(f"Error fetching games: {e}")
+            no_result = QLabel("Error loading results.")
+            no_result.setStyleSheet("color: #BBBBBB;")
+            self.grid_layout.addWidget(no_result, 0, 0, 1, 3)
             return
 
-        if not songs:
+        if not games:
             placeholder = QLabel("No results found.")
-            placeholder.setFont(QFont("Segoe UI", 12))
+            placeholder.setFont(QFont("Segoe UI", 14))
             placeholder.setStyleSheet("color: #BBBBBB;")
             placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.scroll_layout.addWidget(placeholder)
+            self.grid_layout.addWidget(placeholder, 0, 0, 1, 3)  # span 3 columns
             return
 
-        for song in songs:
-            song_widget = self.create_song_item(song)
-            self.scroll_layout.addWidget(song_widget)
-        '''
+        # Add cards in 3-column grid
+        for index, game in enumerate(games):
+            card = self.create_game_card(game)
+            row = index // 3
+            col = index % 3
+            self.grid_layout.addWidget(card, row, col)
 
-    # Function for creating visualized song item
-    def create_song_item(self, song):
-        song_widget = QWidget()
-        song_layout = QHBoxLayout(song_widget)
-        song_layout.setContentsMargins(12, 8, 12, 8)
-        song_layout.setSpacing(14)
+        # Optional: add stretch to push everything to top
+        self.grid_layout.setRowStretch(self.grid_layout.rowCount(), 1)
 
-        # Icon
-        icon_label = QLabel()
-        icon_label.setFixedSize(48, 48)
-        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        placeholder = self._placeholder.scaled(
-            48, 48,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        icon_label.setPixmap(placeholder)
+    def create_game_card(self, game):
+        card = QFrame()
+        card.setFixedSize(250, 320)  # Wider and taller = more space
+        card.setCursor(Qt.CursorShape.PointingHandCursor)
+        card.setStyleSheet("""
+            QFrame {
+                background-color: #2D2D2D;
+                border-radius: 16px;
+                border: 1px solid #333;
+            }
+            QFrame:hover {
+                background-color: #383838;
+                border: 1px solid #555;
+            }
+        """)
 
-        thumbnail_url = song.get('thumbnails')
-        if thumbnail_url:
-            self._async_load_icon(thumbnail_url, icon_label)
-        else:
-            icon_label.setText("♪")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(12)
 
-        icon_label.setStyleSheet("""
+        image_label = QLabel()
+        image_label.setFixedHeight(150)
+        image_label.setMinimumWidth(196)  # 220 - 12*2 margins
+        image_label.setStyleSheet("""
             QLabel {
-                background-color: #1DB954;
-                border-radius: 6px;
-                color: white;
-                font-size: 22px;
-                font-weight: bold;
+                background-color: #1a1a1a;
+                border-radius: 12px;
             }
         """)
+        image_label.setScaledContents(True)  # This makes image fill the label completely
 
-        # Title and Artist stacked vertically
-        text_container = QWidget()
-        text_layout = QVBoxLayout(text_container)
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(2)
+        # Load image asynchronously (safe scaling)
+        if game.get("background_image"):
+            self._async_load_card_image(game["background_image"], image_label)
+        else:
+            placeholder = self._placeholder.scaled(
+                400, 400,  # High-res source
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            image_label.setPixmap(placeholder)
 
-        name_label = QLabel(song.get('title'))
-        name_label.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
-        name_label.setStyleSheet("color: white; background-color: transparent;")
-        name_label.setWordWrap(False)
+        layout.addWidget(image_label)
 
-        artist_label = QLabel(song.get('artist', 'Unknown Artist'))
-        artist_label.setFont(QFont("Segoe UI", 11))
-        artist_label.setStyleSheet("color: white; background-color: transparent;")
-        artist_label.setWordWrap(False)
+        title = QLabel(game["name"])
+        title.setWordWrap(True)
+        title.setFont(QFont("Segoe UI", 11, QFont.Weight.DemiBold))
+        title.setStyleSheet("color: white;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
 
-        text_layout.addWidget(name_label)
-        text_layout.addWidget(artist_label)
+        # RATING
+        rating_layout = QHBoxLayout()
+        rating_layout.setSpacing(6)
 
-        # Play button
-        play_btn = QPushButton("▶")
-        play_btn.setFixedSize(40, 40)
-        play_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        play_btn.setStyleSheet("""
+        star_lbl = QLabel("★")
+        star_lbl.setStyleSheet("color: #FFD700; font-size: 16px;")
+        rating_layout.addWidget(star_lbl)
+
+        rating_lbl = QLabel(f"{game.get('rating', 0):.1f}")
+        rating_lbl.setStyleSheet("color: #FFD700; font-size: 14px;")
+        rating_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Medium))
+        rating_layout.addWidget(rating_lbl)
+        rating_layout.addStretch()
+        layout.addLayout(rating_layout)
+
+        # VIEW BUTTON
+        view_btn = QPushButton("View")
+        view_btn.setFixedHeight(40)
+        view_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        view_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1DB954;
-                border: none;
-                border-radius: 20px;
+                background-color: #092f94;
                 color: white;
-                font-size: 14px;
-                font-weight: bold;
+                border-radius: 10px;
+                padding: 8px;
             }
-            QPushButton:hover {
-                background-color: #1ed760;
-            }
-            QPushButton:pressed {
-                background-color: #169c46;
-            }
+            QPushButton:hover   { background-color: #1177EE; }
+            QPushButton:pressed { background-color: #0055AA; }
         """)
-        play_btn.clicked.connect(lambda: self.app_controller.open_api_music_player(song))
+        if self.app_controller:
+            view_btn.clicked.connect(lambda _, gid=game["id"]: self.app_controller.show_game_detail(gid))
 
-        song_layout.addWidget(icon_label)
-        song_layout.addWidget(text_container, 1)
-        song_layout.addWidget(play_btn)
+        layout.addWidget(view_btn)
+        layout.addStretch()
 
-        return song_widget
+        return card
 
-    def _async_load_icon(self, url: str, label: QLabel):
-        loader = ImageLoader(url)
-        self.active_loaders.append(loader)  # Track it
-
+    def _async_load_card_image(self, url: str, label: QLabel):
         def on_finished(img_url: str, data: QByteArray):
-            # Remove from active list first
-            if loader in self.active_loaders:
-                self.active_loaders.remove(loader)
-
             if img_url != url or data.isEmpty():
-                return
-
-            # Safety: if label was deleted, skip
-            if label is None or not label.parent():
                 return
 
             pix = QPixmap()
             if not pix.loadFromData(data):
                 return
 
-            # Force 1:1 square
-            pix = pix.scaled(
-                48, 48,
-                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+            if pix.isNull():
+                return
+
+            scaled = pix.scaled(
+                156, 156,
+                Qt.AspectRatioMode.KeepAspectRatio,  # NOT ByExpanding!
                 Qt.TransformationMode.SmoothTransformation
             )
-            pix = pix.copy((pix.width() - 48) // 2, (pix.height() - 48) // 2, 48, 48)
-            label.setPixmap(pix)
 
+            # Center crop to exactly fill 156x156
+            if scaled.width() > scaled.height():
+                cropped = scaled.copy((scaled.width() - 156) // 2, 0, 156, 156)
+            elif scaled.height() > scaled.width():
+                cropped = scaled.copy(0, (scaled.height() - 156) // 2, 156, 156)
+            else:
+                cropped = scaled
+
+            label.setPixmap(cropped)
+
+        loader = ImageLoader(url)
         loader.signals.finished.connect(on_finished)
         QThreadPool.globalInstance().start(loader)
