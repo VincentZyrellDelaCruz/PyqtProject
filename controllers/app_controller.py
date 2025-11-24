@@ -74,45 +74,32 @@ class AppController:
             self.widget.addWidget(self.main)
 
         self.widget.setCurrentWidget(self.main)
-        self.goto_home()
+        self.switch_to_music_page(self.main.ui.tab_home)
 
-    def goto_local(self):
+    def switch_to_music_page(self, tab, index=1):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('MUSIC')
             self.main.ui.home_stack.setCurrentIndex(0)
-            self.main.ui.music_stack.setCurrentIndex(0)
-            self.main.ui.tab_local.setChecked(True)
-
-    def goto_home(self):
-        if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('MUSIC')
-            self.main.ui.home_stack.setCurrentIndex(0)
-            self.main.ui.music_stack.setCurrentIndex(1)
-            self.main.ui.tab_home.setChecked(True)
-
-    def goto_genre(self):
-        if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('MUSIC')
-            self.main.ui.home_stack.setCurrentIndex(0)
-            self.main.ui.music_stack.setCurrentIndex(2)
-            self.main.ui.tab_genre.setChecked(True)
-
-    def goto_search(self):
-        if self.main and hasattr(self.main, "ui"):
-            self.main.ui.page_label.setText('MUSIC')
-            self.main.ui.home_stack.setCurrentIndex(0)
-            self.main.ui.music_stack.setCurrentIndex(3)
-            self.main.ui.tab_search.setChecked(True)
+            tab.setChecked(True)
+            self.main.ui.music_stack.setCurrentIndex(index)
 
     def goto_about(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('ABOUT')
+
+            self.main.ui.about1.setChecked(True)
+            self.main.ui.about2.setChecked(True)
+
             self.main.ui.home_stack.setCurrentIndex(5)
             self.main.ui.top_tabs.setVisible(False)
 
     def goto_profile(self):
         if self.main and hasattr(self.main, "ui"):
             self.main.ui.page_label.setText('USER PROFILE')
+
+            self.main.ui.user1.setChecked(True)
+            self.main.ui.user2.setChecked(True)
+
             self.main.ui.home_stack.setCurrentIndex(6)
             self.main.ui.top_tabs.setVisible(False)
 
@@ -298,6 +285,9 @@ class AppController:
 
     def switch_to_movie_page(self, index):
         self.main.ui.movies_stack.setCurrentIndex(index)
+
+    def switch_to_game_page(self, index):
+        self.main.ui.games_stack.setCurrentIndex(index)
 
     def open_music_player(self, song_title):
         music_player = MusicPlayer(song_title)

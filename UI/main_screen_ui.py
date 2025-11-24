@@ -88,7 +88,7 @@ class Ui_MainWindow(object):
         self.movies_main.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.movies_main.setStyleSheet("QPushButton:checked {\n"
             " background-color: white;\n"
-            " color: #71C562;\n"
+            " color: #E50914;\n"
             " border-radius: 10px;\n"
             "}")
         self.movies_main.setText("")
@@ -106,7 +106,7 @@ class Ui_MainWindow(object):
         self.games_main.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.games_main.setStyleSheet("QPushButton:checked {\n"
             " background-color: white;\n"
-            " color: #71C562;\n"
+            " color: #092f94;\n"
             " border-radius: 10px;\n"
             "}")
         self.games_main.setText("")
@@ -428,7 +428,7 @@ class Ui_MainWindow(object):
         self.tab_movie_home.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_movie_home.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #E50914; border-bottom: 4px solid #E50914; }")
         self.tab_movie_home.setText("Home")
         self.tab_movie_home.setCheckable(True)
         self.tab_movie_home.setVisible(False)
@@ -439,7 +439,7 @@ class Ui_MainWindow(object):
         self.tab_tvshows.setMinimumSize(QtCore.QSize(140, 40))
         self.tab_tvshows.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #E50914; border-bottom: 4px solid #E50914; }")
         self.tab_tvshows.setText("TV Shows")
         self.tab_tvshows.setCheckable(True)
         self.tab_tvshows.setVisible(False)
@@ -449,7 +449,7 @@ class Ui_MainWindow(object):
         self.tab_movies = QtWidgets.QPushButton(parent=self.top_tabs)
         self.tab_movies.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_movies.setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-                                      "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+                                      "QPushButton:checked { color: #E50914; border-bottom: 4px solid #E50914; }")
         self.tab_movies.setText("Movies")
         self.tab_movies.setCheckable(True)
         self.tab_movies.setVisible(False)
@@ -460,7 +460,7 @@ class Ui_MainWindow(object):
         self.tab_movie_genre.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_movie_genre.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #E50914; border-bottom: 4px solid #E50914; }")
         self.tab_movie_genre.setText("Genre")
         self.tab_movie_genre.setCheckable(True)
         self.tab_movie_genre.setVisible(False)
@@ -471,7 +471,7 @@ class Ui_MainWindow(object):
         self.tab_movie_search.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_movie_search.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #E50914; border-bottom: 4px solid #E50914; }")
         self.tab_movie_search.setText("Search")
         self.tab_movie_search.setCheckable(True)
         self.tab_movie_search.setVisible(False)
@@ -491,9 +491,10 @@ class Ui_MainWindow(object):
         self.tab_game_home.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_game_home.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #092f94; border-bottom: 4px solid #092f94; }")
         self.tab_game_home.setText("Home")
         self.tab_game_home.setCheckable(True)
+        self.tab_game_home.setChecked(True)
         self.tab_game_home.setVisible(False)
         self.tab_game_home.setObjectName("tab_game_home")
         self.tabs_layout.addWidget(self.tab_game_home)
@@ -502,7 +503,7 @@ class Ui_MainWindow(object):
         self.tab_game_genre.setMinimumSize(QtCore.QSize(140, 40))
         self.tab_game_genre.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #092f94; border-bottom: 4px solid #092f94; }")
         self.tab_game_genre.setText("Game Genres")
         self.tab_game_genre.setCheckable(True)
         self.tab_game_genre.setVisible(False)
@@ -513,7 +514,7 @@ class Ui_MainWindow(object):
         self.tab_game_search.setMinimumSize(QtCore.QSize(120, 40))
         self.tab_game_search.setStyleSheet(
             "QPushButton { font-size: 14pt; font-weight: bold; border: none; color: #333; }\n"
-            "QPushButton:checked { color: #71C562; border-bottom: 4px solid #71C562; }")
+            "QPushButton:checked { color: #092f94; border-bottom: 4px solid #092f94; }")
         self.tab_game_search.setText("Search Games")
         self.tab_game_search.setCheckable(True)
         self.tab_game_search.setVisible(False)
@@ -589,6 +590,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.home_stack.setCurrentIndex(0)
         self.music_stack.setCurrentIndex(0)
+        self.movies_stack.setCurrentIndex(0)
+        self.games_stack.setCurrentIndex(0)
         self.burger_icon.toggled['bool'].connect(self.widget_icontexts.setHidden)
         self.burger_icon.toggled['bool'].connect(self.widget_icons.setVisible)
         self.music_main.toggled['bool'].connect(self.music_main_text.setChecked)

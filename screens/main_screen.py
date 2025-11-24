@@ -4,6 +4,9 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QButtonGroup,
 from PyQt6.QtGui import QIcon, QFont, QPixmap
 from UI.main_screen_ui import Ui_MainWindow
 from screens.artist_screen import ArtistScreen
+from screens.game_genre_screen import GameGenreScreen
+from screens.game_home_screen import GameHomeScreen
+from screens.game_search_screen import GameSearchScreen
 from screens.home_screen import HomeScreen
 from screens.genre_screen import GenreScreen
 from screens.search_screen import SearchScreen
@@ -24,11 +27,10 @@ class MainScreen(QMainWindow):
         self.init_ui()
         self.connect_signals()
         self.display_local_playlist()
-        self.add_home_page()
-        self.add_genre_page()
-        self.add_search_page()
+        self.add_music_pages()
         self.add_about_page()
         self.add_profile_page()
+        self.add_games_pages()
 
     def init_ui(self):
         pixmap1 = QPixmap(config.IMAGE_PATH + 'μsic_sync-removebg.png').scaled(150, 150)
@@ -69,17 +71,22 @@ class MainScreen(QMainWindow):
 
     def connect_signals(self):
         # Music tabs
-        self.ui.tab_home.clicked.connect(self.app_controller.goto_home)
-        self.ui.tab_genre.clicked.connect(self.app_controller.goto_genre)
-        self.ui.tab_search.clicked.connect(self.app_controller.goto_search)
-        self.ui.tab_local.clicked.connect(self.app_controller.goto_local)
+        self.ui.tab_home.clicked.connect(lambda: self.app_controller.switch_to_music_page(self.ui.tab_home, 1))
+        self.ui.tab_genre.clicked.connect(lambda: self.app_controller.switch_to_music_page(self.ui.tab_genre, 2))
+        self.ui.tab_search.clicked.connect(lambda: self.app_controller.switch_to_music_page(self.ui.tab_search, 3))
+        self.ui.tab_local.clicked.connect(lambda: self.app_controller.switch_to_music_page(self.ui.tab_local, 0))
 
-        # Movie tabs (connect later in switch_to_movies)
+        # Movie tabs
         self.ui.tab_movie_home.clicked.connect(lambda: self.app_controller.switch_to_movie_page(0))
         self.ui.tab_tvshows.clicked.connect(lambda: self.app_controller.switch_to_movie_page(1))
         self.ui.tab_movies.clicked.connect(lambda: self.app_controller.switch_to_movie_page(2))
         self.ui.tab_movie_genre.clicked.connect(lambda: self.app_controller.switch_to_movie_page(3))
         self.ui.tab_movie_search.clicked.connect(lambda: self.app_controller.switch_to_movie_page(4))
+
+        # Game tabs
+        self.ui.tab_game_home.clicked.connect(lambda: self.app_controller.switch_to_game_page(0))
+        self.ui.tab_game_genre.clicked.connect(lambda: self.app_controller.switch_to_game_page(1))
+        self.ui.tab_game_search.clicked.connect(lambda: self.app_controller.switch_to_game_page(2))
 
         self.ui.about1.clicked.connect(self.app_controller.goto_about)
         self.ui.about2.clicked.connect(self.app_controller.goto_about)
@@ -116,19 +123,15 @@ class MainScreen(QMainWindow):
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
         """)
         stack_no = stack.addWidget(scroll_area)
-        print(stack_no)
+        print(page_widget, stack_no)
 
-    def add_home_page(self):
+    def add_music_pages(self):
         home_widget = HomeScreen(self.app_controller)
-        self.add_page(home_widget, self.ui.music_stack)
-
-    def add_genre_page(self):
         genre_widget = GenreScreen(self.app_controller)
-        self.add_page(genre_widget, self.ui.music_stack)
-
-    def add_search_page(self):
         search_widget = SearchScreen(self.app_controller)
-        self.add_page(search_widget, self.ui.music_stack)
+
+        for widget in [home_widget, genre_widget, search_widget]:
+            self.add_page(widget, self.ui.music_stack)
 
     def add_about_page(self):
         about_widget = AboutScreen(self.app_controller)
@@ -137,6 +140,14 @@ class MainScreen(QMainWindow):
     def add_profile_page(self):
         profile_widget = ProfileScreen(self.app_controller)
         self.add_page(profile_widget, self.ui.home_stack)
+
+    def add_games_pages(self):
+        home_widget = GameHomeScreen(self.app_controller)
+        genre_widget = GameGenreScreen(self.app_controller)
+        search_widget = GameSearchScreen(self.app_controller)
+
+        for widget in [home_widget, genre_widget, search_widget]:
+            self.add_page(widget, self.ui.games_stack)
 
     def display_local_playlist(self):
         if self.local_playlist is None:
