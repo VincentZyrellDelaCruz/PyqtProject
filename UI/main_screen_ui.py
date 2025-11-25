@@ -194,7 +194,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setObjectName("verticalLayout_5")
 
         self.logo_2 = QtWidgets.QLabel(parent=self.widget_icontexts)
-        self.logo_2.setMaximumSize(QtCore.QSize(100, 50))
+        self.logo_2.setMaximumSize(QtCore.QSize(120, 50))
         self.logo_2.setText("")
         self.logo_2.setPixmap(QtGui.QPixmap("UI\\../assets/images/μsic_sync_with_name-removebg.png"))
         self.logo_2.setScaledContents(True)

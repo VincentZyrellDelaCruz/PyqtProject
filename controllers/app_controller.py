@@ -15,9 +15,9 @@ import config, os
 class AppController:
     def __init__(self):
         self.widget = QStackedWidget()
-        self.widget.setWindowTitle('μsic sync')
+        self.widget.setWindowTitle('Spectra Medius')
 
-        icon_path = os.path.join(config.IMAGE_PATH, "μsic_sync-removebg.png")
+        icon_path = os.path.join(config.IMAGE_PATH, "logo.png")
         self.widget.setWindowIcon(QIcon(icon_path))
 
         # Set window flags for proper desktop app behavior

@@ -33,9 +33,9 @@ class MainScreen(QMainWindow):
         self.add_games_pages()
 
     def init_ui(self):
-        pixmap1 = QPixmap(config.IMAGE_PATH + 'μsic_sync-removebg.png').scaled(150, 150)
+        pixmap1 = QPixmap(config.IMAGE_PATH + 'logo.png').scaled(150, 150)
         self.ui.logo_1.setPixmap(pixmap1)
-        pixmap2 = QPixmap(config.IMAGE_PATH + 'μsic_sync_with_name-removebg.png').scaled(200, 100)
+        pixmap2 = QPixmap(config.IMAGE_PATH + 'logo_with_name.png').scaled(200, 100)
         self.ui.logo_2.setPixmap(pixmap2)
 
         self.ui.burger_icon.setIcon(QIcon(config.ICON_PATH + 'burger-bar.png'))

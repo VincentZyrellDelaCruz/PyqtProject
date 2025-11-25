@@ -13,41 +13,32 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(1020, 680)
-        
-        # Create main layout for the dialog
-        self.main_layout = QtWidgets.QVBoxLayout(Dialog)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
-        
+        self.gridLayout = QtWidgets.QGridLayout(Dialog)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
         self.widget = QtWidgets.QWidget(parent=Dialog)
         self.widget.setStyleSheet("QWidget {\n"
-"    background-color: #71C562;\n"
+"    background-color: #000000;\n"
 "}")
         self.widget.setObjectName("widget")
-        
-        # Create layout for the widget to center the logo
-        self.widget_layout = QtWidgets.QVBoxLayout(self.widget)
-        self.widget_layout.setContentsMargins(50, 50, 50, 50)
-        
-        # Add spacer to push logo to center
-        spacer_top = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.widget_layout.addItem(spacer_top)
-        
         self.logo = QtWidgets.QLabel(parent=self.widget)
-        self.logo.setMinimumSize(QtCore.QSize(200, 100))
-        self.logo.setMaximumSize(QtCore.QSize(400, 200))
+        self.logo.setMinimumSize(QtCore.QSize(70, 70))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap("UI\\../assets/images/μsic_sync_with_name-removebg.png"))
+        self.logo.setPixmap(QtGui.QPixmap("UI\\../assets/images/logo_with_name.png"))
         self.logo.setScaledContents(True)
+        self.logo.setMinimumSize(QtCore.QSize(300, 100))
+        self.logo.setMaximumSize(QtCore.QSize(350, 130))
         self.logo.setObjectName("logo")
-        self.logo.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.widget_layout.addWidget(self.logo, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
-        
-        # Add spacer to push logo to center
-        spacer_bottom = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.widget_layout.addItem(spacer_bottom)
-        
-        self.main_layout.addWidget(self.widget)
+
+        # Center logo using layout (added)
+        self.centerLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.centerLayout.setContentsMargins(0, 0, 0, 0)
+        self.centerLayout.setSpacing(0)
+        self.centerLayout.addStretch()
+        self.centerLayout.addWidget(self.logo, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.centerLayout.addStretch()
+
+        self.gridLayout.addWidget(self.widget, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)

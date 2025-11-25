@@ -19,7 +19,7 @@ class StartupScreen(QDialog):
 
     # For customizing outside Qt Designer
     def init_ui(self):
-        image_path = os.path.join(config.IMAGE_PATH, "μsic_sync_with_name-removebg.png")
+        image_path = os.path.join(config.IMAGE_PATH, "logo_with_name.png")
 
         logo_pixmap = QPixmap(image_path)
 
