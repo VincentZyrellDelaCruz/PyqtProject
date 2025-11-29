@@ -193,3 +193,18 @@ class MainScreen(QMainWindow):
             content_layout.addWidget(song_btn)
         scroll_area.setWidget(content_widget)
         self.ui.music_stack.addWidget(scroll_area)
+
+    def cleanup_on_logout(self):
+        """Clean up resources when logging out"""
+        # Stop any playing music
+        if hasattr(self.app_controller, 'player') and self.app_controller.player:
+            try:
+                self.app_controller.player.stop_music()
+            except:
+                pass
+        
+        # Clear any selected buttons
+        if self.button_group:
+            checked_button = self.button_group.checkedButton()
+            if checked_button:
+                checked_button.setChecked(False)
