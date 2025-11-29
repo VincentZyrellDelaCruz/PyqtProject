@@ -16,3 +16,10 @@ LYRICS_PATH = os.path.join(BASE_DIR, 'lyrics') + os.sep
 DEFAULT_VOLUME = 50 # Temporary fixed volume
 
 API_KEYS = {} # Used to interact systems using API
+
+# TMDB API Configuration
+TMDB_API_KEY = "4fc92bbedcf713b032d10ed99be51798"
+TMDB_BASE_URL = "https://api.themoviedb.org/3/"
+TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
+TMDB_MAX_REQUESTS_PER_SECOND = 10
+TMDB_REQUEST_TIMEOUT = 10  # seconds

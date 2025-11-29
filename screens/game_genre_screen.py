@@ -7,7 +7,32 @@ from controllers.game_api_client import fetch_genres, fetch_games_by_genre
 from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 from typing import List
 
-GAME_GENRES = fetch_genres()
+# Static game genres for now (to avoid API dependency)
+GAME_GENRES = [
+    {"id": 4, "name": "Action", "slug": "action", "games_count": 180000},
+    {"id": 51, "name": "Indie", "slug": "indie", "games_count": 65000},
+    {"id": 3, "name": "Adventure", "slug": "adventure", "games_count": 140000},
+    {"id": 5, "name": "RPG", "slug": "role-playing-games-rpg", "games_count": 56000},
+    {"id": 10, "name": "Strategy", "slug": "strategy", "games_count": 56000},
+    {"id": 2, "name": "Shooter", "slug": "shooter", "games_count": 59000},
+    {"id": 40, "name": "Casual", "slug": "casual", "games_count": 51000},
+    {"id": 14, "name": "Simulation", "slug": "simulation", "games_count": 70000},
+    {"id": 7, "name": "Puzzle", "slug": "puzzle", "games_count": 97000},
+    {"id": 11, "name": "Arcade", "slug": "arcade", "games_count": 22000},
+    {"id": 83, "name": "Platformer", "slug": "platformer", "games_count": 100000},
+    {"id": 1, "name": "Racing", "slug": "racing", "games_count": 24000},
+    {"id": 59, "name": "Massively Multiplayer", "slug": "massively-multiplayer", "games_count": 3700},
+    {"id": 15, "name": "Sports", "slug": "sports", "games_count": 21000},
+    {"id": 6, "name": "Fighting", "slug": "fighting", "games_count": 11000},
+    {"id": 19, "name": "Family", "slug": "family", "games_count": 5000},
+    {"id": 28, "name": "Board Games", "slug": "board-games", "games_count": 8000},
+    {"id": 34, "name": "Educational", "slug": "educational", "games_count": 15000},
+    {"id": 17, "name": "Card", "slug": "card", "games_count": 4500},
+]
+
+def get_game_genres():
+    """Return static game genres."""
+    return GAME_GENRES
 
 class GameGenreScreen(QWidget):
     def __init__(self, app_controller=None):
@@ -32,8 +57,10 @@ class GameGenreScreen(QWidget):
         genre_section = self.create_genre_section()
         self.main_layout.addWidget(genre_section)
 
-        genre_games_section = self.create_games_section(GAME_GENRES[0])
-        self.main_layout.addWidget(genre_games_section)
+        genres = get_game_genres()
+        if genres:
+            genre_games_section = self.create_games_section(genres[0])
+            self.main_layout.addWidget(genre_games_section)
 
         self.main_layout.addStretch()
 
@@ -87,7 +114,7 @@ class GameGenreScreen(QWidget):
         scroll_layout.setContentsMargins(0, 0, 10, 10)
         scroll_layout.setSpacing(10)
 
-        for genre in GAME_GENRES:
+        for genre in get_game_genres():
             genre_card = self.create_genre_card(genre)
             scroll_layout.addWidget(genre_card)
 

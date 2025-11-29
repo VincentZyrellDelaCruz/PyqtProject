@@ -19,6 +19,9 @@
 `pip install python-vlc`
 > **NOTE:** You need to download VLC media player
 
+`pip install yt-dlp`
+> **NOTE** Video player for trailers - version 3.0.21203
+
 ## FOR UPDATING UI FILE: 
 After you created/update your UI file, you need to convert from ui (xml) to python file by entering this command to terminal:
 

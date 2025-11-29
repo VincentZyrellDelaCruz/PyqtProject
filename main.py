@@ -1,5 +1,10 @@
 import sys
 import os
+
+# Configure VLC path before importing any modules that use VLC
+os.environ["PYTHON_VLC_MODULE_PATH"] = r"C:\Program Files\VideoLAN\VLC"
+os.environ["PATH"] = os.environ["PYTHON_VLC_MODULE_PATH"] + os.pathsep + os.environ["PATH"]
+
 from PyQt6.QtWidgets import QApplication
 from controllers.app_controller import AppController
 

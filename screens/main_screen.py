@@ -12,6 +12,11 @@ from screens.genre_screen import GenreScreen
 from screens.search_screen import SearchScreen
 from screens.profile_screen import ProfileScreen
 from screens.about_screen import AboutScreen
+from screens.movie_home_screen import MovieHomeScreen
+from screens.tv_shows_screen import TVShowsScreen
+from screens.movies_screen import MoviesScreen
+from screens.movie_genre_screen import MovieGenreScreen
+from screens.movie_search_screen import MovieSearchScreen
 import config, os
 import controllers.music_metadata as metadata
 import controllers.api_client as ytapi
@@ -30,6 +35,7 @@ class MainScreen(QMainWindow):
         self.add_music_pages()
         self.add_about_page()
         self.add_profile_page()
+        self.add_movies_pages()
         self.add_games_pages()
 
     def init_ui(self):
@@ -140,6 +146,16 @@ class MainScreen(QMainWindow):
     def add_profile_page(self):
         profile_widget = ProfileScreen(self.app_controller)
         self.add_page(profile_widget, self.ui.home_stack)
+
+    def add_movies_pages(self):
+        home_widget = MovieHomeScreen(self.app_controller)
+        tv_widget = TVShowsScreen(self.app_controller)
+        movies_widget = MoviesScreen(self.app_controller)
+        genre_widget = MovieGenreScreen(self.app_controller)
+        search_widget = MovieSearchScreen(self.app_controller)
+
+        for widget in [home_widget, tv_widget, movies_widget, genre_widget, search_widget]:
+            self.add_page(widget, self.ui.movies_stack)
 
     def add_games_pages(self):
         home_widget = GameHomeScreen(self.app_controller)
