@@ -90,7 +90,7 @@ class HomeScreen(QWidget):
             }
 
             QScrollBar::handle:horizontal {
-                background: #444;
+                background: #71C562;
                 border-radius: 4px;
                 min-width: 20px;
             }

@@ -27,7 +27,7 @@ class SearchScreen(QWidget):
         # Header
         header_label = QLabel("Search Music")
         header_label.setFont(QFont("Segoe UI", 22, QFont.Weight.Bold))
-        header_label.setStyleSheet("color: black; background: transparent;")
+        header_label.setStyleSheet("color: white; background: transparent;")
         main_layout.addWidget(header_label)
 
         # Search
@@ -165,7 +165,7 @@ class SearchScreen(QWidget):
         if not songs:
             placeholder = QLabel("No results found.")
             placeholder.setFont(QFont("Segoe UI", 12))
-            placeholder.setStyleSheet("color: #BBBBBB;")
+            placeholder.setStyleSheet("color: #white;")
             placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.scroll_layout.addWidget(placeholder)
             return

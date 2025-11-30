@@ -35,8 +35,9 @@ class MainScreen(QMainWindow):
         self.add_music_pages()
         self.add_about_page()
         self.add_profile_page()
-        self.add_movies_pages()
-        self.add_games_pages()
+
+        self.movies_pages_added = False
+        self.games_pages_added = False
 
     def init_ui(self):
         pixmap1 = QPixmap(config.IMAGE_PATH + 'logo.png').scaled(150, 150)
@@ -112,7 +113,7 @@ class MainScreen(QMainWindow):
         self.ui.user1.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
         self.ui.user2.clicked.connect(lambda: self.ui.top_tabs.setVisible(False))
 
-    def add_page(self, page_widget, stack):
+    def add_page(self, page_widget, stack, scroll_color='#71C562'):
         page_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         page_widget.setMinimumSize(0, 0)
         page_widget.setMaximumSize(16777215, 16777215)
@@ -121,12 +122,12 @@ class MainScreen(QMainWindow):
         scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll_area.setWidget(page_widget)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            QScrollArea { border: none; background-color: #F5F5F5; }
-            QScrollBar:vertical { border: none; background: #E0E0E0; width: 10px; border-radius: 5px; margin: 2px; }
-            QScrollBar::handle:vertical { background: #71C562; border-radius: 5px; min-height: 40px; }
-            QScrollBar::handle:vertical:hover { background: #5fb052; }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+        scroll_area.setStyleSheet(f"""
+            QScrollArea {{ border: none; background-color: #121212; }}
+            QScrollBar:vertical {{ border: none; background: #E0E0E0; width: 10px; border-radius: 5px; margin: 2px; }}
+            QScrollBar::handle:vertical {{ background: {scroll_color}; border-radius: 5px; min-height: 40px; }}
+            QScrollBar::handle:vertical:hover {{ background: #5fb052; }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
         """)
         stack_no = stack.addWidget(scroll_area)
         print(page_widget, stack_no)
@@ -148,6 +149,9 @@ class MainScreen(QMainWindow):
         self.add_page(profile_widget, self.ui.home_stack)
 
     def add_movies_pages(self):
+        if self.movies_pages_added:
+            return
+
         home_widget = MovieHomeScreen(self.app_controller)
         tv_widget = TVShowsScreen(self.app_controller)
         movies_widget = MoviesScreen(self.app_controller)
@@ -155,15 +159,27 @@ class MainScreen(QMainWindow):
         search_widget = MovieSearchScreen(self.app_controller)
 
         for widget in [home_widget, tv_widget, movies_widget, genre_widget, search_widget]:
-            self.add_page(widget, self.ui.movies_stack)
+            self.add_page(widget, self.ui.movies_stack, '#E50914')
+
+        self.movies_pages_added = True
 
     def add_games_pages(self):
+        if self.games_pages_added:
+            return
+
         home_widget = GameHomeScreen(self.app_controller)
         genre_widget = GameGenreScreen(self.app_controller)
         search_widget = GameSearchScreen(self.app_controller)
 
         for widget in [home_widget, genre_widget, search_widget]:
-            self.add_page(widget, self.ui.games_stack)
+            self.add_page(widget, self.ui.games_stack, '#092f94')
+
+        # Store references in app_controller for back navigation
+        self.app_controller.game_home_screen = home_widget
+        self.app_controller.game_genre_screen = genre_widget
+        self.app_controller.game_search_screen = search_widget
+
+        self.games_pages_added = True
 
     def display_local_playlist(self):
         if self.local_playlist is None:

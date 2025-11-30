@@ -1,21 +1,19 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QSizePolicy, QScrollArea
-from PyQt6.QtCore import Qt, QSize, QByteArray, QThreadPool, QObject, pyqtSignal
-from PyQt6.QtGui import QPixmap, QFont, QIcon
+from PyQt6.QtCore import Qt, QByteArray, QThreadPool
+from PyQt6.QtGui import QPixmap, QFont
 import controllers.api_client as ytapi
 from controllers.clickable import ClickableLabel
-import os, config, requests
-from controllers.music_metadata import display_thumbnail
 from controllers.async_loader import ImageLoader, load_placeholder_pixmap
 from typing import List
 
 GENRES = [
-    {'name': 'OPM',   'color': 'blue', 'id': 'RDCLAK5uy_l3gmCPbU_mzs8z79aSnl_DDZY1EdqPc8U'},
-    {'name': 'Metal', 'color': 'black', 'id': 'PLEGvyr7gIqkFQOVzs21J18TYFAuhfNm_m'},
-    {'name': 'R&B & Soul',  'color': 'yellow', 'id': 'RDCLAK5uy_lQi-t2mN-swhdhGPOg4h4Zw-P5KzdwUSM'},
-    {'name': 'Kpop',  'color': 'violet', 'id': 'RDCLAK5uy_lYcZ4MYVJGyRwpiW773f6tOgQGK8rqD9Q'},
-    {'name': 'Jpop',  'color': 'red', 'id': 'RDCLAK5uy_nbK9qSkqYZvtMXH1fLCMmC1yn8HEm0W90'},
-    {'name': 'Hip Hop',   'color': 'green', 'id': 'RDCLAK5uy_kP2172rQNb3KFXz880xp6M98R_ME5CIKA'},
-    {'name': 'Thai',   'color': 'green', 'id': 'RDCLAK5uy_nIawIGq1WuKLBwtCIIcCh3WRwh-u21efk'},
+    {'name': 'OPM',   'id': 'RDCLAK5uy_l3gmCPbU_mzs8z79aSnl_DDZY1EdqPc8U'},
+    {'name': 'Metal', 'id': 'PLEGvyr7gIqkFQOVzs21J18TYFAuhfNm_m'},
+    {'name': 'R&B & Soul',  'id': 'RDCLAK5uy_lQi-t2mN-swhdhGPOg4h4Zw-P5KzdwUSM'},
+    {'name': 'Kpop',  'id': 'RDCLAK5uy_lYcZ4MYVJGyRwpiW773f6tOgQGK8rqD9Q'},
+    {'name': 'Jpop',  'id': 'RDCLAK5uy_nbK9qSkqYZvtMXH1fLCMmC1yn8HEm0W90'},
+    {'name': 'Hip Hop',   'id': 'RDCLAK5uy_kP2172rQNb3KFXz880xp6M98R_ME5CIKA'},
+    {'name': 'Thai',   'id': 'RDCLAK5uy_nIawIGq1WuKLBwtCIIcCh3WRwh-u21efk'},
 ]
 
 class GenreScreen(QWidget):
@@ -80,7 +78,7 @@ class GenreScreen(QWidget):
                 border-radius: 4px;
             }
             QScrollBar::handle:horizontal {
-                background: #444;
+                background: #71C562;
                 border-radius: 4px;
                 min-width: 20px;
             }
@@ -204,7 +202,7 @@ class GenreScreen(QWidget):
         card = QFrame()
         card.setFixedSize(180, 100)
         card.setStyleSheet(f"""
-            background-color: {genre['color']};
+            background-color: #71C562;
             border-radius: 10px;
         """)
 

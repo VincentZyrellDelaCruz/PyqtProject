@@ -27,7 +27,7 @@ class GameSearchScreen(QWidget):
         # Header
         header_label = QLabel("Search Games")
         header_label.setFont(QFont("Segoe UI", 22, QFont.Weight.Bold))
-        header_label.setStyleSheet("color: black; background: transparent;")
+        header_label.setStyleSheet("color: white; background: transparent;")
         main_layout.addWidget(header_label)
 
         # Search
@@ -39,6 +39,10 @@ class GameSearchScreen(QWidget):
         main_layout.addWidget(self.results_frame)
 
         main_layout.addStretch()
+
+    def clear_search(self):
+        """Clear the search input field"""
+        self.search_input.clear()
 
     # Function for creating search section
     def create_search_section(self):
@@ -122,7 +126,26 @@ class GameSearchScreen(QWidget):
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("background: transparent; border: none;")
+        scroll_area.setStyleSheet('''
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: #1E1E1E;
+                height: 8px;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical {
+                background: #092f94;
+                border-radius: 4px;
+                min-width: 20px;
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                width: 0;
+                height: 0;
+            }''')
 
         # Container widget that holds the grid
         scroll_content = QWidget()
@@ -265,7 +288,7 @@ class GameSearchScreen(QWidget):
             QPushButton:pressed { background-color: #0055AA; }
         """)
         if self.app_controller:
-            view_btn.clicked.connect(lambda _, gid=game["id"]: self.app_controller.show_game_detail(gid))
+            view_btn.clicked.connect(lambda _, gid=game["id"]: self.app_controller.show_game_detail(gid, source=2))
 
         layout.addWidget(view_btn)
         layout.addStretch()

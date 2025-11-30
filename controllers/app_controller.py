@@ -3,6 +3,7 @@ from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QStackedWidget
 
 from screens.artist_screen import ArtistScreen
+from screens.game_info_screen import GameInfoScreen
 from screens.startup_screen import StartupScreen
 from screens.welcome_screen import WelcomeScreen
 from screens.login_screen import LoginScreen
@@ -35,6 +36,9 @@ class AppController:
         self.welcome = WelcomeScreen(self)
         self.login = LoginScreen(self)
         self.main = None # will be initialized after login
+
+        # Track where the user came from when viewing game detail
+        self.game_detail_source = 0  # 0=home, 1=genre, 2=search
 
         self.add_widget_stack()
 
@@ -232,6 +236,8 @@ class AppController:
         self.main.ui.tab_movie_home.setChecked(True)
         self.main.ui.page_label.setText("MOVIES")
 
+        self.main.add_movies_pages()
+
     def switch_to_games(self):
         self.main.ui.home_stack.setCurrentIndex(2)
         self.main.ui.top_tabs.setVisible(True)
@@ -283,6 +289,8 @@ class AppController:
         self.main.ui.tab_movie_home.setChecked(True)
         self.main.ui.page_label.setText("GAMES")
 
+        self.main.add_games_pages()
+
     def switch_to_movie_page(self, index):
         self.main.ui.movies_stack.setCurrentIndex(index)
 
@@ -297,3 +305,41 @@ class AppController:
         print(f"{song['title']} - {song['artist']} ({song['videoId']}) {song['thumbnails']}")
         music_player = ApiMusicPlayer(song)
         music_player.exec()
+
+    def show_game_detail(self, game_id, source=0):
+        if self.main and hasattr(self.main, "ui"):
+            self.game_detail_source = source  # Store source for back button
+            games_stack = self.main.ui.games_stack
+            if games_stack.count() > 3:
+                old = games_stack.widget(3)
+                games_stack.removeWidget(old)
+                old.deleteLater()
+            game_info_widget = GameInfoScreen(self, game_id)
+            games_stack.insertWidget(3, game_info_widget)
+            self.main.ui.home_stack.setCurrentIndex(2)
+            games_stack.setCurrentIndex(3)
+            self.main.ui.page_label.setText('GAMES')
+            self.main.ui.top_tabs.setVisible(True)
+
+    def go_back_from_game_detail(self):
+        if self.main and hasattr(self.main, "ui"):
+            games_stack = self.main.ui.games_stack
+            # Go back to the appropriate screen based on source
+            if games_stack.count() > 3:
+                current_index = games_stack.currentIndex()
+                if current_index == 3:
+                    # If coming from search screen, clear the search input
+                    if self.game_detail_source == 2:
+                        if hasattr(self, 'game_search_screen'):
+                            self.game_search_screen.clear_search()
+
+                    # Return to the screen user came from
+                    games_stack.setCurrentIndex(self.game_detail_source)
+
+    def go_back_from_game_search(self):
+        """Clear search input and return to search screen"""
+        if self.main and hasattr(self.main, "ui"):
+            games_stack = self.main.ui.games_stack
+            # Check if we have a search screen widget (it might be at index 4+)
+            # For now, just go back to search tab (index 2)
+            games_stack.setCurrentIndex(2)
