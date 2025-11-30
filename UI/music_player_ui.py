@@ -80,9 +80,43 @@ class Ui_Dialog(object):
         self.progressTime = QtWidgets.QSlider(parent=self.info)
         self.progressTime.setGeometry(QtCore.QRect(10, 130, 571, 31))
         self.progressTime.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.progressTime.setStyleSheet("QSlider {\n"
-"    \n"
-"}")
+        self.progressTime.setStyleSheet("""
+            QSlider {
+                background: transparent;
+                height: 8px;
+            }
+            
+            QSlider::groove:horizontal {
+                border: none;
+                height: 8px;
+                background: #2e2e2e; /* dark base groove */
+                border-radius: 4px;
+            }
+            
+            QSlider::sub-page:horizontal {
+                background: #4CAF50; /* green progress */
+                border-radius: 4px;
+            }
+            
+            QSlider::add-page:horizontal {
+                background: #1a1a1a; /* remaining groove */
+                border-radius: 4px;
+            }
+            
+            QSlider::handle:horizontal {
+                background: #4CAF50; /* green handle */
+                border: 2px solid #ffffff;
+                width: 14px;
+                height: 14px;
+                margin: -4px 0; /* centers handle vertically */
+                border-radius: 7px;
+            }
+            
+            QSlider::handle:horizontal:hover {
+                background: #66BB6A; /* lighter green on hover */
+                border: 2px solid #ffffff;
+            }
+        """)
         self.progressTime.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.progressTime.setObjectName("progressTime")
         self.currentTime = QtWidgets.QLabel(parent=self.info)

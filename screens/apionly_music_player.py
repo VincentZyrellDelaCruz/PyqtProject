@@ -1,18 +1,14 @@
 import os
-import sys
-import random
 import tempfile
-
 import requests
 import vlc
 import yt_dlp
 from functools import partial
-from PyQt6.QtWidgets import QApplication, QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QDialog, QWidget, QScrollArea, QPushButton, QButtonGroup, QVBoxLayout
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath, QImage
 from UI.music_player_ui import Ui_Dialog
 import config
-from controllers.music_metadata import get_music_metadata
 
 
 class ApiMusicPlayer(QDialog):
@@ -89,6 +85,7 @@ class ApiMusicPlayer(QDialog):
         if not self.playlist:
             self.ui.playback_tab.hide()
             self.ui.list_tab.hide()
+            self.ui.loop_shuffle.hide()
 
         # Setup UI signals and default values
         self.ui.playButton.setIcon(QIcon(config.ICON_PATH + "play.svg"))
