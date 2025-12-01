@@ -17,7 +17,6 @@ class GameInfoScreen(QWidget):
         self.active_loaders: List[ImageLoader] = []
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet("background-color: #121212;")
 
         self._placeholder = load_placeholder_pixmap()
 
@@ -53,7 +52,7 @@ class GameInfoScreen(QWidget):
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(8)
 
-        back_btn = QPushButton("← Back")
+        back_btn = QPushButton("Back")
         back_btn.setFixedWidth(120)
         back_btn.setFixedHeight(40)
         back_btn.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
@@ -71,7 +70,7 @@ class GameInfoScreen(QWidget):
                 background-color: #0055AA;
             }
         """)
-        
+
         if self.app_controller:
             back_btn.clicked.connect(self.app_controller.go_back_from_game_detail)
 
@@ -94,22 +93,22 @@ class GameInfoScreen(QWidget):
         header_layout.setContentsMargins(24, 24, 24, 24)
         header_layout.setSpacing(24)
 
-        # Game image (left side)
+        # Game image (left side) - NOW FULLY FILLS THE LABEL
         self.game_image_label = QLabel()
-        self.game_image_label.setFixedSize(250, 350)
-        self.game_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.game_image_label.setFixedSize(300, 200)
+        self.game_image_label.setScaledContents(True)  # This makes the image fill 100%
         self.game_image_label.setStyleSheet("""
             QLabel {
-                background: #0a0a0a;
-                border: 1px solid #333;
+                background: #000000;
                 border-radius: 8px;
+                border: none;
             }
         """)
 
-        # Load placeholder first
+        # Load placeholder first - also fills completely
         placeholder = self._placeholder.scaled(
             250, 350,
-            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.AspectRatioMode.IgnoreAspectRatio,
             Qt.TransformationMode.SmoothTransformation
         )
         self.game_image_label.setPixmap(placeholder)
@@ -117,7 +116,7 @@ class GameInfoScreen(QWidget):
         # Async load real image
         image_url = self.game_info.get('background_image')
         if image_url:
-            self._async_load_game_image(image_url, self.game_image_label, size=250)
+            self._async_load_game_image(image_url, self.game_image_label)
 
         header_layout.addWidget(self.game_image_label)
 
@@ -142,7 +141,7 @@ class GameInfoScreen(QWidget):
 
         # Rating
         rating = self.game_info.get('rating', 0)
-        rating_label = QLabel(f"★ Rating: {rating:.1f}")
+        rating_label = QLabel(f"Rating: {rating:.1f}")
         rating_label.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
         rating_label.setStyleSheet("color: #FFD700;")
         info_layout.addWidget(rating_label)
@@ -199,13 +198,13 @@ class GameInfoScreen(QWidget):
         # Strip HTML tags if present
         import re
         description = re.sub('<[^<]+?>', '', description)
-        
+
         desc_label = QLabel(description)
         desc_label.setFont(QFont("Segoe UI", 11))
         desc_label.setStyleSheet("color: #CCCCCC;")
         desc_label.setWordWrap(True)
         desc_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        
+
         details_layout.addWidget(desc_label)
 
         # Additional info grid
@@ -247,8 +246,9 @@ class GameInfoScreen(QWidget):
 
         return details_frame
 
-    def _async_load_game_image(self, url: str, label: QLabel, size: int = 250):
-        """Load game image asynchronously"""
+    def _async_load_game_image(self, url: str, label: QLabel):
+        """Load game image asynchronously and fill the label completely"""
+
         def on_finished(img_url: str, data: QByteArray):
             if img_url != url or data.isEmpty():
                 return
@@ -260,13 +260,14 @@ class GameInfoScreen(QWidget):
             if pix.isNull():
                 return
 
+            # Scale to exactly fill 250x350, ignoring aspect ratio (crop to fill)
             scaled = pix.scaled(
-                size, size + 100,
-                Qt.AspectRatioMode.KeepAspectRatio,
+                250, 350,
+                Qt.AspectRatioMode.IgnoreAspectRatio,
                 Qt.TransformationMode.SmoothTransformation
             )
 
-            label.setPixmap(scaled)
+            label.setPixmap(scaled)  # setScaledContents(True) handles full fill
 
         loader = ImageLoader(url)
         loader.signals.finished.connect(on_finished)

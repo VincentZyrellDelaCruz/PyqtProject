@@ -237,7 +237,7 @@ class Ui_MainWindow(object):
             "}\n"
             "QPushButton:checked {\n"
             " background-color: white;\n"
-            " color: #71C562;\n"
+            " color: #E50914;\n"
             " border-radius: 10px;\n"
             "}")
         self.movies_main_text.setIcon(icon_movies)
@@ -257,7 +257,7 @@ class Ui_MainWindow(object):
             "}\n"
             "QPushButton:checked {\n"
             " background-color: white;\n"
-            " color: #71C562;\n"
+            " color: #092f94;\n"
             " border-radius: 10px;\n"
             "}")
         self.games_main_text.setIcon(icon_games)

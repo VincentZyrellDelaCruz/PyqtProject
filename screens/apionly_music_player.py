@@ -36,6 +36,12 @@ class ApiMusicPlayer(QDialog):
         self.instance = vlc.Instance('--quiet', '--no-video')
         self.player = self.instance.media_player_new()
 
+        # Exit player when music ends
+        self.player.event_manager().event_attach(
+            vlc.EventType.MediaPlayerEndReached,
+            self.on_music_end
+        )
+
         # Timers
         self.rotation_timer = QTimer(self)
         self.rotation_timer.timeout.connect(self.spin_pixmap)
@@ -57,6 +63,10 @@ class ApiMusicPlayer(QDialog):
         self.display_playlist([])  # Empty by default
         self.init_ui()
         self.play()
+
+    # Close dialog when music ends
+    def on_music_end(self, event):
+        QTimer.singleShot(0, self.close)
 
     # Cleanup method to stop playback and timers
     def cleanup(self):
@@ -99,6 +109,9 @@ class ApiMusicPlayer(QDialog):
         self.ui.loop_shuffle.clicked.connect(self.loop_shuffle)
         self.ui.playButton.clicked.connect(self.toggle_play_pause)
 
+        self.ui.nextButton.clicked.connect(self.seek_forward)
+        self.ui.prevButton.clicked.connect(self.seek_backward)
+
         self.ui.playback_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(0))
         self.ui.list_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(1))
         self.ui.lyrics_tab.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(2))
@@ -111,6 +124,29 @@ class ApiMusicPlayer(QDialog):
         self.player.audio_set_volume(config.DEFAULT_VOLUME)
         self.ui.volume_label.setText(str(config.DEFAULT_VOLUME))
         self.ui.volume_slider.valueChanged.connect(self.change_volume)
+
+    # Move forward by 10 seconds
+    def seek_forward(self):
+        if not self.player:
+            return
+        current = self.player.get_time()
+        new_time = current + 10000  # +10 seconds
+        duration = self.player.get_length()
+        if new_time > duration:
+            new_time = duration
+        self.player.set_time(new_time)
+        self.ui.progressTime.setValue(new_time)
+
+    # Move backward by 10 seconds
+    def seek_backward(self):
+        if not self.player:
+            return
+        current = self.player.get_time()
+        new_time = current - 10000  # -10 seconds
+        if new_time < 0:
+            new_time = 0
+        self.player.set_time(new_time)
+        self.ui.progressTime.setValue(new_time)
 
     def change_volume(self, value):
         self.player.audio_set_volume(value)
@@ -318,21 +354,3 @@ class ApiMusicPlayer(QDialog):
         minutes = seconds // 60
         seconds %= 60
         return f"{minutes:02}:{seconds:02}"
-
-'''
-if __name__ == "__main__":
-    from ytmusicapi import YTMusic
-    ytmusic = YTMusic()
-    results = ytmusic.search("Never Gonna Give You Up", filter="songs")
-    if results:
-        song_metadata = {
-            "title": results[0]["title"],
-            "artist": results[0]["artists"][0]["name"],
-            "videoId": results[0]["videoId"],
-            "thumbnails": results[0]["thumbnails"]
-        }
-        app = QApplication(sys.argv)
-        window = ApiMusicPlayer(song_metadata)
-        window.show()
-        sys.exit(app.exec())
-'''

@@ -1,13 +1,7 @@
-from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QFrame,
-    QSizePolicy
-)
-from PyQt6.QtGui import QFont
-
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSizePolicy
+from PyQt6.QtGui import QFont, QPixmap
+import config
 
 class AboutScreen(QWidget):
     def __init__(self, app_controller=None):
@@ -44,7 +38,7 @@ class AboutScreen(QWidget):
         card_frame = QFrame()
         card_frame.setStyleSheet("""
             QFrame {
-                background-color: white;
+                background-color: #1E1E1E;
                 border-radius: 12px;
                 padding: 0px;
             }
@@ -59,11 +53,11 @@ class AboutScreen(QWidget):
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(18, 14, 18, 8)
 
-        title_label = QLabel("About Music Sync")
+        title_label = QLabel("About Spectra Medius")
         title_label.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         title_label.setStyleSheet("""
             QLabel {
-                color: #1A1A1A;
+                color: white;
                 background-color: transparent;
                 letter-spacing: -0.3px;
             }
@@ -81,17 +75,20 @@ class AboutScreen(QWidget):
         content_layout.setSpacing(10)
         content_layout.setContentsMargins(18, 0, 18, 18)
 
-        description = QLabel(
-            "Music Sync is a modern music player application designed to provide "
-            "seamless playback, lyrics synchronization, and a smooth user experience. "
-            "With Music Sync, you can manage your local music library effortlessly "
-            "while enjoying a clean, responsive interface built for music lovers."
-        )
+        logo_label = QLabel()
+        logo_pixmap = QPixmap(config.IMAGE_PATH + "logo_with_name.png")
+        logo_label.setPixmap(logo_pixmap.scaled(360, 300, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        content_layout.addWidget(logo_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        description = QLabel('''
+            Sprectra Medius is a desktop media and entertainment application that unifies music, movies, and video games into a single, elegant Python (PyQt) GUI. Built on Qt’s mature widget, multimedia, and layout system via Python bindings, it delivers a responsive, cross-platform experience with native look-and-feel and robust extensibility for creators and consumers alike.
+        ''')
         description.setWordWrap(True)
         description.setFont(QFont("Segoe UI", 11))
         description.setStyleSheet("""
             QLabel {
-                color: #5A5A5A;
+                color: white;
                 background-color: transparent;
                 line-height: 1.4;
             }
@@ -99,9 +96,9 @@ class AboutScreen(QWidget):
         content_layout.addWidget(description)
 
         # Version info
-        version_label = QLabel("Version 1.0.0  |  © 2025 Music Sync Team")
+        version_label = QLabel("Version 1.0.0  |  © 2025 Spectra Stratos")
         version_label.setFont(QFont("Segoe UI", 9))
-        version_label.setStyleSheet("color: #999999; background-color: transparent; margin-top: 4px;")
+        version_label.setStyleSheet("color: white; background-color: transparent; margin-top: 4px;")
         content_layout.addWidget(version_label)
 
         card_layout.addWidget(content_frame)
@@ -112,7 +109,7 @@ class AboutScreen(QWidget):
         card_frame = QFrame()
         card_frame.setStyleSheet("""
             QFrame {
-                background-color: white;
+                background-color: #1E1E1E;
                 border-radius: 12px;
                 padding: 0px;
             }
@@ -131,7 +128,7 @@ class AboutScreen(QWidget):
         dev_label.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         dev_label.setStyleSheet("""
             QLabel {
-                color: #1A1A1A;
+                color: white;
                 background-color: transparent;
                 letter-spacing: -0.3px;
             }
@@ -148,15 +145,14 @@ class AboutScreen(QWidget):
 
         # Developer list
         names = QLabel(
-            "• Student Name 1\n"
-            "• Student Name 2\n"
-            "• Student Name 3\n"
-            "• Student Name 4"
+            "• Vincent Zyrell Dela Cruz\n"
+            "• Michelle P. Llander\n"
+            "• Lauris-jay T. Lorenzo\n"
         )
         names.setFont(QFont("Segoe UI", 11))
         names.setStyleSheet("""
             QLabel {
-                color: #5A5A5A;
+                color: white;
                 background-color: transparent;
                 line-height: 1.6;
             }

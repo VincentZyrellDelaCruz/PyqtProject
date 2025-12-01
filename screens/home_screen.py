@@ -1,4 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QSizePolicy, QScrollArea
+from PyQt6.QtWidgets import (
+    QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QFrame,
+    QSizePolicy, QScrollArea
+)
 from PyQt6.QtCore import Qt, QSize, QThreadPool, QByteArray
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 import controllers.api_client as ytapi
@@ -26,8 +29,8 @@ class HomeScreen(QWidget):
         main_layout.setSpacing(24)
 
         # Top Songs Section
-        top_songs_section = self.create_top_songs_section()
-        main_layout.addWidget(top_songs_section)
+        self.top_songs_section = self.create_top_songs_section()
+        main_layout.addWidget(self.top_songs_section)
 
         # Two-column layout for Artists + Recommendations
         two_column_frame = QFrame()
@@ -36,17 +39,14 @@ class HomeScreen(QWidget):
         two_column_layout.setContentsMargins(0, 0, 0, 0)
         two_column_layout.setSpacing(24)
 
-        # Create both sections
         top_artist_section = self.create_top_artist_section()
-        recommendation_section = self.create_recommendation_section()
+        self.recommendation_section = self.create_recommendation_section()
 
-        # Ensure both sections expand evenly
         top_artist_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        recommendation_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.recommendation_section.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        # Add to horizontal layout
         two_column_layout.addWidget(top_artist_section)
-        two_column_layout.addWidget(recommendation_section)
+        two_column_layout.addWidget(self.recommendation_section)
 
         main_layout.addWidget(two_column_frame)
         main_layout.addStretch()
@@ -60,119 +60,177 @@ class HomeScreen(QWidget):
             }
         """)
 
-        card_layout = QVBoxLayout(card_frame)
-        card_layout.setContentsMargins(18, 14, 18, 14)
-        card_layout.setSpacing(10)
+        self.top_songs_layout = QVBoxLayout(card_frame)
+        self.top_songs_layout.setContentsMargins(18, 14, 18, 14)
+        self.top_songs_layout.setSpacing(10)
 
-        # Header
+        # Header (kept permanently)
         header_label = QLabel("Top 10 Songs")
         header_label.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         header_label.setStyleSheet("color: white;")
-        card_layout.addWidget(header_label)
+        self.top_songs_layout.addWidget(header_label)
 
-        # --- Scroll Area ---
+        self.load_top_songs()  # Initial load
+
+        card_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        return card_frame
+
+    def load_top_songs(self):
+        # Clear everything below the header
+        for i in reversed(range(self.top_songs_layout.count())):
+            item = self.top_songs_layout.itemAt(i)
+            if item.widget() and item.widget() != self.top_songs_layout.itemAt(0).widget():
+                item.widget().setParent(None)
+
+        songs = ytapi.get_weekly_top_10()
+
+        if not songs:
+            no_data_label = QLabel("The song is not available")
+            no_data_label.setStyleSheet("color: #AAAAAA; font-size: 16px;")
+            no_data_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            retry_btn = QPushButton("Retry")
+            retry_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #71C562;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #5AA64F;
+                }
+            """)
+            retry_btn.clicked.connect(self.load_top_songs)
+
+            container = QWidget()
+            container_layout = QVBoxLayout(container)
+            container_layout.addStretch()
+            container_layout.addWidget(no_data_label)
+            container_layout.addWidget(retry_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            container_layout.addStretch()
+
+            self.top_songs_layout.addWidget(container)
+            return
+
+        # Normal scroll area with songs
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll_area.setFixedHeight(230)
         scroll_area.setStyleSheet("""
-            QScrollArea {
-                background: transparent;
-                border: none;
-            }
-
+            QScrollArea { background: transparent; border: none; }
             QScrollBar:horizontal {
-                background: #1E1E1E;
-                height: 8px;
-                margin: 0px;  
-                border-radius: 4px;
+                background: #1E1E1E; height: 8px; margin: 0px; border-radius: 4px;
             }
-
             QScrollBar::handle:horizontal {
-                background: #71C562;
-                border-radius: 4px;
-                min-width: 20px;
-            }
-
-            QScrollBar::add-line:horizontal,
-            QScrollBar::sub-line:horizontal {
-                background: none;
-                width: 0px;
-                height: 0px;
-            }
-
-            QScrollBar::add-page:horizontal,
-            QScrollBar::sub-page:horizontal {
-                background: #1E1E1E;
+                background: #71C562; border-radius: 4px; min-width: 20px;
             }
         """)
 
-        # Inner widget for scroll area
         scroll_widget = QWidget()
         scroll_widget.setStyleSheet("background-color: transparent;")
-
         scroll_layout = QHBoxLayout(scroll_widget)
         scroll_layout.setContentsMargins(0, 0, 10, 10)
         scroll_layout.setSpacing(20)
-
-        # Load top 10 songs
-        songs = ytapi.get_weekly_top_10() or []
 
         for song in songs:
             song_card = self.create_song_card(song)
             scroll_layout.addWidget(song_card)
 
         scroll_layout.addStretch()
-        scroll_widget.setLayout(scroll_layout)
         scroll_area.setWidget(scroll_widget)
-        card_layout.addWidget(scroll_area)
-
-        # Allows expansion so the frame height fits the scroll content nicely
-        card_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        return card_frame
+        self.top_songs_layout.addWidget(scroll_area)
 
     def create_recommendation_section(self):
-        # Outer container
         recommendation_frame = QFrame()
         recommendation_frame.setStyleSheet("""
-                    QFrame {
-                        background-color: #1E1E1E;
-                        border-radius: 12px;
-                    }
-                """)
+            QFrame {
+                background-color: #1E1E1E;
+                border-radius: 12px;
+            }
+        """)
 
-        card_layout = QVBoxLayout(recommendation_frame)
-        card_layout.setContentsMargins(18, 14, 18, 14)
-        card_layout.setSpacing(10)
+        self.recommendation_layout = QVBoxLayout(recommendation_frame)
+        self.recommendation_layout.setContentsMargins(18, 14, 18, 14)
+        self.recommendation_layout.setSpacing(10)
 
-        # Header
-        header_label = QLabel("Songs around the world")
-        header_label.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
-        header_label.setStyleSheet("color: white;")
-        card_layout.addWidget(header_label)
+        # Header (permanent)
+        self.recommendation_header = QLabel("Songs around the world")
+        self.recommendation_header.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        self.recommendation_header.setStyleSheet("color: white;")
+        self.recommendation_layout.addWidget(self.recommendation_header)
 
-        # Content widget inside scroll area
+        self.load_recommendations()
+
+        return recommendation_frame
+
+    def load_recommendations(self):
+        # Remove all widgets except the header (index 0)
+        for i in reversed(range(self.recommendation_layout.count())):
+            if i == 0:  # Skip header
+                continue
+            item = self.recommendation_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+            elif item.layout():
+                # Clear layout if present
+                layout = item.layout()
+                while layout.count():
+                    child = layout.takeAt(0)
+                    if child.widget():
+                        child.widget().deleteLater()
+
+        songs = ytapi.get_recommended_songs()
+
+        if not songs:
+            no_data_label = QLabel("The song is not available")
+            no_data_label.setStyleSheet("background: transparent; color: #AAAAAA; font-size: 16px;")
+            no_data_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            retry_btn = QPushButton("Retry")
+            retry_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #71C562;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #5AA64F;
+                }
+            """)
+            retry_btn.clicked.connect(self.load_recommendations)
+
+            container = QWidget()
+            container.setStyleSheet('background: transparent;')
+            container_layout = QVBoxLayout(container)
+            container_layout.addStretch()
+            container_layout.addWidget(no_data_label)
+            container_layout.addWidget(retry_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            container_layout.addStretch()
+
+            self.recommendation_layout.addWidget(container)
+            return
+
+        # Normal list of recommended songs
         content_widget = QWidget()
-        content_widget.setStyleSheet("background-color: transparent;")
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(0, 2, 0, 8)
         content_layout.setSpacing(10)
-
-        # Load top artists from API client
-        songs = ytapi.get_recommended_songs() or []
 
         for song in songs:
             song_btn = self.create_song_button(song)
             content_layout.addWidget(song_btn)
 
-        content_widget.setLayout(content_layout)
-        card_layout.addWidget(content_widget)
-
-        return recommendation_frame
+        self.recommendation_layout.addWidget(content_widget)
 
     def create_top_artist_section(self):
-        # Outer container
         top_artist_frame = QFrame()
         top_artist_frame.setStyleSheet("""
             QFrame {
@@ -185,20 +243,17 @@ class HomeScreen(QWidget):
         card_layout.setContentsMargins(18, 14, 18, 14)
         card_layout.setSpacing(10)
 
-        # Header
         header_label = QLabel("Top Artists")
         header_label.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         header_label.setStyleSheet("color: white;")
         card_layout.addWidget(header_label)
 
-        # Content widget inside scroll area
         content_widget = QWidget()
         content_widget.setStyleSheet("background-color: transparent;")
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(0, 2, 0, 8)
         content_layout.setSpacing(10)
 
-        # Load top artists from API client
         artists = ytapi.get_top_artists() or []
 
         for artist in artists:
@@ -208,6 +263,7 @@ class HomeScreen(QWidget):
         card_layout.addWidget(content_widget)
         return top_artist_frame
 
+    # === Rest of your methods remain unchanged ===
     def create_song_button(self, song):
         title = song.get('title', 'Unknown')
         url = song.get('thumbnails', '')
@@ -272,7 +328,6 @@ class HomeScreen(QWidget):
         vbox.setSpacing(8)
         vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # Thumbnail
         img_label = QLabel()
         img_label.setFixedSize(140, 140)
         img_label.setStyleSheet("border-radius: 10px; background-color: #444;")
@@ -282,14 +337,12 @@ class HomeScreen(QWidget):
 
         vbox.addWidget(img_label)
 
-        # Title
         title_label = ClickableLabel(song.get("title", "Unknown"))
         title_label.setWordWrap(True)
         title_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         title_label.setStyleSheet("color: white;")
         vbox.addWidget(title_label)
 
-        # Artist
         artist_label = ClickableLabel(song.get("artist", "Unknown"))
         artist_label.setFont(QFont("Segoe UI", 9))
         artist_label.setStyleSheet("color: #BBBBBB;")
@@ -304,16 +357,12 @@ class HomeScreen(QWidget):
         return card
 
     def get_thumbnail(self, image_url: str):
-        # Safely fetch thumbnail image. Returns raw image bytes.
         try:
-            # Validate URL before requesting
             if not image_url or not image_url.startswith(("http://", "https://")):
-                # Return placeholder image instead of crashing
                 placeholder_path = os.path.join(config.BASE_DIR, "assets", "placeholder.png")
                 if os.path.exists(placeholder_path):
                     with open(placeholder_path, "rb") as f:
                         return f.read()
-                # If no placeholder file exists, return empty bytes
                 return b""
 
             response = requests.get(image_url, timeout=5)
@@ -322,7 +371,6 @@ class HomeScreen(QWidget):
 
         except Exception as e:
             print(f"[WARN] Failed to load thumbnail ({image_url}): {e}")
-            # Fallback to placeholder image
             placeholder_path = os.path.join(config.BASE_DIR, "assets", "placeholder.png")
             if os.path.exists(placeholder_path):
                 with open(placeholder_path, "rb") as f:
