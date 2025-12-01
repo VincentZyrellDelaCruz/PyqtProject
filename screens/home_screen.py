@@ -106,6 +106,7 @@ class HomeScreen(QWidget):
             retry_btn.clicked.connect(self.load_top_songs)
 
             container = QWidget()
+            container.setStyleSheet('background: transparent;')
             container_layout = QVBoxLayout(container)
             container_layout.addStretch()
             container_layout.addWidget(no_data_label)

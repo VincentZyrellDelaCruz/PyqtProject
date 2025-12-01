@@ -125,29 +125,6 @@ class ApiMusicPlayer(QDialog):
         self.ui.volume_label.setText(str(config.DEFAULT_VOLUME))
         self.ui.volume_slider.valueChanged.connect(self.change_volume)
 
-    # Move forward by 10 seconds
-    def seek_forward(self):
-        if not self.player:
-            return
-        current = self.player.get_time()
-        new_time = current + 10000  # +10 seconds
-        duration = self.player.get_length()
-        if new_time > duration:
-            new_time = duration
-        self.player.set_time(new_time)
-        self.ui.progressTime.setValue(new_time)
-
-    # Move backward by 10 seconds
-    def seek_backward(self):
-        if not self.player:
-            return
-        current = self.player.get_time()
-        new_time = current - 10000  # -10 seconds
-        if new_time < 0:
-            new_time = 0
-        self.player.set_time(new_time)
-        self.ui.progressTime.setValue(new_time)
-
     def change_volume(self, value):
         self.player.audio_set_volume(value)
         self.ui.volume_label.setText(str(value))
@@ -243,6 +220,29 @@ class ApiMusicPlayer(QDialog):
             self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "loop.svg"))
         elif self.repeat == 2:
             self.ui.loop_shuffle.setIcon(QIcon(config.ICON_PATH + "shuffle.svg"))
+
+    # Move forward by 10 seconds
+    def seek_forward(self):
+        if not self.player:
+            return
+        current = self.player.get_time()
+        new_time = current + 10000  # +10 seconds
+        duration = self.player.get_length()
+        if new_time > duration:
+            new_time = duration
+        self.player.set_time(new_time)
+        self.ui.progressTime.setValue(new_time)
+
+    # Move backward by 10 seconds
+    def seek_backward(self):
+        if not self.player:
+            return
+        current = self.player.get_time()
+        new_time = current - 10000  # -10 seconds
+        if new_time < 0:
+            new_time = 0
+        self.player.set_time(new_time)
+        self.ui.progressTime.setValue(new_time)
 
     def slider_pressed(self):
         self.is_seeking = True

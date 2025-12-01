@@ -93,10 +93,9 @@ class GameInfoScreen(QWidget):
         header_layout.setContentsMargins(24, 24, 24, 24)
         header_layout.setSpacing(24)
 
-        # Game image (left side) - NOW FULLY FILLS THE LABEL
         self.game_image_label = QLabel()
         self.game_image_label.setFixedSize(300, 200)
-        self.game_image_label.setScaledContents(True)  # This makes the image fill 100%
+        self.game_image_label.setScaledContents(True)
         self.game_image_label.setStyleSheet("""
             QLabel {
                 background: #000000;
