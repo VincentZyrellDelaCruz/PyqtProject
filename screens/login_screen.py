@@ -262,12 +262,42 @@ class LoginScreen(QWidget):  # Changed from QDialog to QWidget for stacked widge
         
         # Validate inputs
         if not username or not password:
-            QMessageBox.warning(
-                self,
-                "Missing Information",
-                "Please enter both username and password.",
-                QMessageBox.StandardButton.Ok
-            )
+            msg_box = QMessageBox(self)
+            msg_box.setIcon(QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Missing Information")
+            msg_box.setText("Please enter both username and password.")
+            msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+            msg_box.setStyleSheet("""
+                QMessageBox {
+                    background-color: #2B2B2B;
+                    color: #F8F8F2;
+                    font: 12pt "Segoe UI";
+                }
+                QMessageBox QLabel {
+                    color: #F8F8F2;
+                    background-color: transparent;
+                }
+                QMessageBox QPushButton {
+                    background-color: #44475a;
+                    color: #f8f8f2;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    min-width: 80px;
+                }
+                QMessageBox QPushButton:hover {
+                    background-color: #6272a4;
+                }
+                QMessageBox QPushButton:pressed {
+                    background-color: #555c6e;
+                }
+                QMessageBox#qt_msgbox_label {
+                    color: #F8F8F2;
+                    background-color: transparent;
+                }
+            """)
+
+            msg_box.exec()
             return
         
         # Show loading overlay
