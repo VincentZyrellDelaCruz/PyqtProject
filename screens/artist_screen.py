@@ -28,7 +28,7 @@ class ArtistScreen(QWidget):
     def init_ui(self):
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(10)
+        main_layout.setSpacing(0)
 
         # Search
         artist_panel = self.create_artist_panel()
@@ -158,7 +158,7 @@ class ArtistScreen(QWidget):
 
         two_row_layout = QVBoxLayout(two_row_frame)
         two_row_layout.setContentsMargins(0, 0, 0, 0)
-        two_row_layout.setSpacing(10)
+        two_row_layout.setSpacing(0)
 
         self.album_panel = self.create_album_panel()
         self.song_panel = self.create_song_panel()
@@ -213,8 +213,7 @@ class ArtistScreen(QWidget):
         wrapper = QFrame()
         wrapper.setStyleSheet("""
             QFrame {
-                background-color: #1E1E1E;
-                border-radius: 12px;
+                background-color: #121212;
             }
         """)
 
@@ -296,8 +295,7 @@ class ArtistScreen(QWidget):
         wrapper = QFrame()
         wrapper.setStyleSheet("""
             QFrame {
-                background-color: #1E1E1E;
-                border-radius: 12px;
+                background-color: #121212;
             }
         """)
 

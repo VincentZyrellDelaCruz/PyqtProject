@@ -18,7 +18,7 @@ class PlaylistScreen(QWidget):
         self.active_loaders: List[ImageLoader] = []
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet("SearchScreen { background-color: #121212; }")
+        self.setStyleSheet("{ background-color: #121212; }")
 
         self._placeholder = load_placeholder_pixmap()
 
@@ -27,7 +27,7 @@ class PlaylistScreen(QWidget):
     def init_ui(self):
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(10)
+        self.main_layout.setSpacing(0)
 
         # Search
         self.album_panel = self.create_album_panel()
@@ -97,8 +97,7 @@ class PlaylistScreen(QWidget):
         wrapper = QFrame()
         wrapper.setStyleSheet("""
             QFrame {
-                background-color: #1E1E1E;
-                border-radius: 12px;
+                background-color: #121212;
             }
         """)
 
